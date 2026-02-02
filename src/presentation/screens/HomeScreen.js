@@ -3,8 +3,10 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../core/theme';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
+    const navigation = useNavigation();
   const categories = ['All', 'Gin', 'Vodka', 'Rum', 'Tequila', 'Non-alcoholic'];
   
   const cocktails = [
@@ -66,7 +68,11 @@ export default function HomeScreen() {
         <Text style={styles.sectionTitle}>Popular Cocktails 🔥</Text>
         
         {cocktails.map((cocktail) => (
-          <TouchableOpacity key={cocktail.id} style={styles.card}>
+          <TouchableOpacity 
+            key={cocktail.id} 
+            style={styles.card}
+            onPress={() => navigation.navigate('CocktailDetail', { cocktail })}
+          >
             <View style={styles.cardImagePlaceholder}>
               <Ionicons name="wine" size={32} color={theme.colors.primary} />
             </View>
