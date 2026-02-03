@@ -1,11 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../core/theme';
+import { CocktailApi } from '../../data/api';
 
 export default function CocktailDetailScreen({ route, navigation }) {
-  const { cocktail } = route.params;
+  const { id } = route.params; 
+  const [details, setDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDetails();
+  }, []);
+
+  const loadDetails = async () => {
+    setLoading(true);
+    const data = await CocktailApi.getCocktailDetails(id);
+    setDetails(data);
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (!details) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Failed to load recipe.</Text>
+        <TouchableOpacity onPress={navigation.goBack}>
+          <Text style={styles.backText}>Go Back</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -23,31 +55,45 @@ export default function CocktailDetailScreen({ route, navigation }) {
 
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>{cocktail.name}</Text>
-          <View style={styles.ratingBadge}>
-            <Ionicons name="star" size={16} color="#FFD700" />
-            <Text style={styles.ratingText}>{cocktail.rating}</Text>
-          </View>
+          <Text style={styles.title}>{details.name}</Text>
+          {details.isVirgin && (
+            <View style={styles.tag}>
+              <Text style={styles.tagText}>Virgin</Text>
+            </View>
+          )}
         </View>
 
-        <Text style={styles.category}>{cocktail.category}</Text>
-        <Text style={styles.description}>{cocktail.description}</Text>
+        <Text style={styles.category}>
+          {details.isVirgin ? 'Non-Alcoholic Beverage' : 'Alcoholic Cocktail'}
+        </Text>
 
-        <View style={styles.divider} />
+        <ScrollView>
+          <Text style={styles.sectionTitle}>Ingredients</Text>
+          {details.ingredients.map((ing, index) => (
+            <View key={index} style={styles.ingredientRow}>
+              <View style={styles.bullet} />
+              <Text style={styles.ingredientText}>
+                {ing.amount ? `${ing.amount} ` : ''}
+                {ing.unit ? `${ing.unit} ` : ''}
+                {ing.name}
+              </Text>
+            </View>
+          ))}
 
-        <Text style={styles.sectionTitle}>Ingredients</Text>
-        <View style={styles.ingredientRow}>
-          <View style={styles.bullet} />
-          <Text style={styles.ingredientText}>Ingredient 1 (Placeholder)</Text>
-        </View>
-        <View style={styles.ingredientRow}>
-          <View style={styles.bullet} />
-          <Text style={styles.ingredientText}>Ingredient 2 (Placeholder)</Text>
-        </View>
+          <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.actionButton}>
-          <Text style={styles.actionButtonText}>Start Mixing</Text>
-        </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Instructions</Text>
+          {details.instructions.map((step) => (
+            <View key={step.id} style={styles.stepRow}>
+              <View style={styles.stepNumberBadge}>
+                <Text style={styles.stepNumber}>{step.number}</Text>
+              </View>
+              <Text style={styles.stepText}>{step.text}</Text>
+            </View>
+          ))}
+
+          <View style={{height: 40}} /> 
+        </ScrollView>
       </View>
     </View>
   );
@@ -58,16 +104,35 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.background,
   },
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    color: theme.colors.text,
+    marginBottom: 20,
+  },
+  backText: {
+    color: theme.colors.primary,
+  },
   imageHeader: {
-    height: 300,
+    height: 250,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
   },
   placeholderImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: 'rgba(244, 63, 94, 0.1)',
     justifyContent: 'center',
     alignItems: 'center',
@@ -100,18 +165,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     flex: 1,
   },
-  ratingBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: theme.colors.surface,
+  tag: {
+    backgroundColor: theme.colors.secondary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  ratingText: {
-    color: '#FFD700',
+  tagText: {
+    color: '#FFF',
     fontWeight: 'bold',
-    marginLeft: 4,
+    fontSize: 12,
   },
   category: {
     color: theme.colors.primary,
@@ -119,11 +182,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: theme.spacing.m,
-  },
-  description: {
-    color: theme.colors.textSecondary,
-    fontSize: 16,
-    lineHeight: 24,
   },
   divider: {
     height: 1,
@@ -152,16 +210,29 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     fontSize: 16,
   },
-  actionButton: {
-    backgroundColor: theme.colors.primary,
-    marginTop: theme.spacing.xl,
-    padding: theme.spacing.m,
-    borderRadius: 16,
-    alignItems: 'center',
+  stepRow: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
-  actionButtonText: {
-    color: 'white',
+  stepNumberBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+    marginTop: 2,
+  },
+  stepNumber: {
+    color: theme.colors.primary,
     fontWeight: 'bold',
-    fontSize: 18,
+    fontSize: 12,
+  },
+  stepText: {
+    color: theme.colors.textSecondary,
+    fontSize: 16,
+    flex: 1,
+    lineHeight: 22,
   }
 });
