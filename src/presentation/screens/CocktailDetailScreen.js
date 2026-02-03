@@ -1,24 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../core/theme';
-import { CocktailApi } from '../../data/api';
+import { CocktailDetailViewModel } from '../viewmodels/CocktailDetailViewModel';
 
 export default function CocktailDetailScreen({ route, navigation }) {
-  const { id } = route.params; 
-  const [details, setDetails] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { id } = route.params;
+
+  const { cocktail, loading, error, loadCocktail } = CocktailDetailViewModel();
 
   useEffect(() => {
-    loadDetails();
-  }, []);
-
-  const loadDetails = async () => {
-    setLoading(true);
-    const data = await CocktailApi.getCocktailDetails(id);
-    setDetails(data);
-    setLoading(false);
-  };
+    loadCocktail(id);
+  }, [id, loadCocktail]);
 
   if (loading) {
     return (
@@ -28,12 +21,12 @@ export default function CocktailDetailScreen({ route, navigation }) {
     );
   }
 
-  if (!details) {
+  if (error || !cocktail) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load recipe.</Text>
+        <Text style={styles.errorText}>{error || "Nem sikerült betölteni a receptet."}</Text>
         <TouchableOpacity onPress={navigation.goBack}>
-          <Text style={styles.backText}>Go Back</Text>
+          <Text style={styles.backText}>Vissza</Text>
         </TouchableOpacity>
       </View>
     );
@@ -41,10 +34,20 @@ export default function CocktailDetailScreen({ route, navigation }) {
 
   return (
     <View style={styles.container}>
+      
       <View style={styles.imageHeader}>
-        <View style={styles.placeholderImage}>
-          <Ionicons name="wine" size={80} color={theme.colors.primary} />
-        </View>
+        {cocktail.imageUrl ? (
+            <Image 
+                source={{ uri: cocktail.imageUrl }} 
+                style={{ width: '100%', height: '100%' }} 
+                resizeMode="cover" 
+            />
+        ) : (
+            <View style={styles.placeholderImage}>
+                <Ionicons name="wine" size={80} color={theme.colors.primary} />
+            </View>
+        )}
+        
         <TouchableOpacity 
           style={styles.backButton} 
           onPress={() => navigation.goBack()}
@@ -55,8 +58,8 @@ export default function CocktailDetailScreen({ route, navigation }) {
 
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
-          <Text style={styles.title}>{details.name}</Text>
-          {details.isVirgin && (
+          <Text style={styles.title}>{cocktail.name}</Text>
+          {cocktail.isVirgin && (
             <View style={styles.tag}>
               <Text style={styles.tagText}>Virgin</Text>
             </View>
@@ -64,33 +67,42 @@ export default function CocktailDetailScreen({ route, navigation }) {
         </View>
 
         <Text style={styles.category}>
-          {details.isVirgin ? 'Non-Alcoholic Beverage' : 'Alcoholic Cocktail'}
+            {cocktail.categoryLabel}
         </Text>
 
-        <ScrollView>
-          <Text style={styles.sectionTitle}>Ingredients</Text>
-          {details.ingredients.map((ing, index) => (
-            <View key={index} style={styles.ingredientRow}>
-              <View style={styles.bullet} />
-              <Text style={styles.ingredientText}>
-                {ing.amount ? `${ing.amount} ` : ''}
-                {ing.unit ? `${ing.unit} ` : ''}
-                {ing.name}
-              </Text>
-            </View>
-          ))}
-
-          <View style={styles.divider} />
+        <ScrollView showsVerticalScrollIndicator={false}>
+          
+          {cocktail.ingredients.length > 0 && (
+            <>
+                <Text style={styles.sectionTitle}>Ingredients</Text>
+                {cocktail.ingredients.map((ing, index) => (
+                    <View key={index} style={styles.ingredientRow}>
+                        <View style={styles.bullet} />
+                        <Text style={styles.ingredientText}>
+                            {ing.formatted} 
+                        </Text>
+                    </View>
+                ))}
+                <View style={styles.divider} />
+            </>
+          )}
 
           <Text style={styles.sectionTitle}>Instructions</Text>
-          {details.instructions.map((step) => (
-            <View key={step.id} style={styles.stepRow}>
-              <View style={styles.stepNumberBadge}>
-                <Text style={styles.stepNumber}>{step.number}</Text>
-              </View>
-              <Text style={styles.stepText}>{step.text}</Text>
-            </View>
-          ))}
+          
+          {cocktail.sortedSteps.length === 0 ? (
+             <Text style={{ fontStyle: 'italic', color: '#888' }}>Nincs rögzített leírás.</Text>
+          ) : (
+             cocktail.sortedSteps.map((step) => (
+                <View key={step.id} style={styles.stepRow}>
+                    <View style={styles.stepNumberBadge}>
+                        <Text style={styles.stepNumber}>{step.number}</Text>
+                    </View>
+                    <Text style={styles.stepText}>
+                        {step.fullDescription}
+                    </Text>
+                </View>
+             ))
+          )}
 
           <View style={{height: 40}} /> 
         </ScrollView>
@@ -122,9 +134,10 @@ const styles = StyleSheet.create({
   },
   backText: {
     color: theme.colors.primary,
+    fontWeight: 'bold',
   },
   imageHeader: {
-    height: 250,
+    height: 300,
     backgroundColor: theme.colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
@@ -164,6 +177,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     flex: 1,
+    marginRight: 10,
   },
   tag: {
     backgroundColor: theme.colors.secondary,

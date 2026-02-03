@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../core/theme';
-import { CocktailApi } from '../../data/api';
+import { HomeViewModel } from '../viewmodels/HomeViewModel';
 
 const { width } = Dimensions.get('window');
-// Kiszámoljuk a kártya szélességét: (Képernyő - margók) / 3
 const CARD_WIDTH = (width - (theme.spacing.m * 2) - 20) / 3;
 
 const CATEGORIES = [
@@ -47,42 +46,14 @@ const HomeHeader = ({ activeFilter, setActiveFilter }) => {
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  const [cocktails, setCocktails] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('All'); 
-
-  useEffect(() => {
-    loadCocktails();
-  }, []);
-
-  const loadCocktails = async () => {
-    setLoading(true);
-    const data = await CocktailApi.getAllCocktails();
-    setCocktails(data);
-    setLoading(false);
-  };
-
-  const displayedCocktails = cocktails.filter(c => {
-    switch (activeFilter) {
-      case 'All': return true;
-      case 'Virgin': return c.isVirgin;
-      case 'Alcoholic': return !c.isVirgin;
-      case 'Vodka':
-      case 'Rum':
-      case 'Gin':
-      case 'Tequila':
-      case 'Whiskey':
-        return true; 
-      default: return true; 
-    }
-  });
+  
+  const { cocktails, loading, activeFilter, setActiveFilter } = HomeViewModel();
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.gridCard}
-      onPress={() => navigation.navigate('CocktailDetail', { id: item.id, name: item.name })}
-    >
-      {/* 1. KÉP */}
+  <TouchableOpacity 
+    style={styles.gridCard}
+    onPress={() => navigation.navigate('CocktailDetail', { id: item.id })}
+  >
       <Image 
         source={{ uri: item.imageUrl }} 
         style={styles.cardImage} 
@@ -90,10 +61,8 @@ export default function HomeScreen() {
       />
       
       <View style={styles.cardContent}>
-        {/* 2. NÉV */}
         <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
         
-        {/* 3. VIRGIN FELIRAT (Közvetlen alatta) */}
         {item.isVirgin && (
           <View style={styles.virginBadge}>
             <Text style={styles.virginText}>VIRGIN</Text>
@@ -114,7 +83,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <FlatList
-        data={displayedCocktails}
+        data={cocktails}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         
@@ -156,7 +125,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   
-  // --- KÁRTYA STÍLUSOK ---
   gridCard: {
     width: CARD_WIDTH, 
     backgroundColor: theme.colors.surface,
@@ -169,7 +137,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    // Eltávolítottam a fix magasságot, hogy a tartalomhoz igazodjon
   },
   cardImage: {
     width: '100%',
@@ -178,7 +145,7 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     padding: 8,
-    alignItems: 'flex-start', // Balra igazít mindent
+    alignItems: 'flex-start', 
     width: '100%',
   },
   cardTitle: {
@@ -186,16 +153,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'left',
-    marginBottom: 2, // Csak 2 pixel hely a név és a Virgin között (nagyon szoros)
-    // height: 40,  <-- EZT KIVETTEM, HOGY NE LEGYEN LYUK
+    marginBottom: 2, 
   },
   virginBadge: {
     backgroundColor: '#dcfce7',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    alignSelf: 'flex-start', // Balra tapad
-    marginTop: 0, // Biztos ami biztos
+    alignSelf: 'flex-start',
+    marginTop: 0, 
   },
   virginText: {
     color: '#166534',
@@ -203,7 +169,6 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  // --- HEADER STÍLUSOK (VÁLTOZATLAN) ---
   header: {
     marginTop: theme.spacing.m,
     marginBottom: theme.spacing.l,
