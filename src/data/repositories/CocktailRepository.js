@@ -30,12 +30,18 @@ export const CocktailRepository = {
       
       dto.steps.forEach(stepDto => {
         const d = stepDto.details;
-        if (d && d.ingredient) {
-            ingredients.push(new Ingredient({
-              name: d.ingredient,
-              amount: d.amount,
-              unit: d.unit
-            }));
+        
+        if (d && d.ingredient && stepDto.actionId !== 11) {
+            
+            const exists = ingredients.some(i => i.name === d.ingredient);
+            
+            if (!exists) {
+                ingredients.push(new Ingredient({
+                  name: d.ingredient,
+                  amount: d.amount,
+                  unit: d.unit
+                }));
+            }
         }
       });
 

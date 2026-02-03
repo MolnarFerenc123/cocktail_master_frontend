@@ -11,15 +11,14 @@ export class Step {
     
     Object.keys(this._details).forEach((key) => {
       const value = this._details[key];
-      const placeholder = `[${key}]`; // pl. [unit]
+      const placeholder = `[${key}]`;
 
       if (value !== null && value !== undefined) {
         text = text.replace(placeholder, value);
       } else {
-        text = text.replace(placeholder, '').replace(/\s\s+/g, ' ');
+        text = text.replace(placeholder, '');
       }
     });
-
-    return text.trim();
+    return text.replace(/\s+/g, ' ').trim();
   }
 }
