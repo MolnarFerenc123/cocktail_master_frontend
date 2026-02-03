@@ -1,16 +1,55 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, Image, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { theme } from '../../core/theme';
 import { CocktailApi } from '../../data/api';
+
+const { width } = Dimensions.get('window');
+// Kiszámoljuk a kártya szélességét: (Képernyő - margók) / 3
+const CARD_WIDTH = (width - (theme.spacing.m * 2) - 20) / 3;
+
+const CATEGORIES = [
+  'All', 'Virgin', 'Alcoholic', 'Vodka', 'Rum', 'Gin', 'Tequila', 'Whiskey'
+];
+
+const HomeHeader = ({ activeFilter, setActiveFilter }) => {
+  return (
+    <View>
+      <View style={styles.header}>
+        <Text style={styles.appName}>Cocktail Master</Text>
+      </View>
+
+      <View style={styles.filterContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          {CATEGORIES.map((cat) => (
+            <TouchableOpacity 
+              key={cat}
+              style={[styles.categoryPill, activeFilter === cat && styles.activePill]}
+              onPress={() => setActiveFilter(cat)}
+            >
+              <Text style={[styles.categoryText, activeFilter === cat && styles.activeCategoryText]}>
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+      
+      <Text style={styles.sectionTitle}>Cocktail Menu</Text>
+    </View>
+  );
+};
 
 export default function HomeScreen() {
   const navigation = useNavigation();
   const [cocktails, setCocktails] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filterVirgin, setFilterVirgin] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('All'); 
 
   useEffect(() => {
     loadCocktails();
@@ -23,63 +62,44 @@ export default function HomeScreen() {
     setLoading(false);
   };
 
-  const displayedCocktails = filterVirgin 
-    ? cocktails.filter(c => c.isVirgin) 
-    : cocktails;
-
-  const renderHeader = () => (
-    <View>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.greeting}>Good Evening!</Text>
-          <Text style={styles.title}>Let's mix something.</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton} onPress={loadCocktails}>
-          <Ionicons name="reload" size={20} color={theme.colors.text} />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.filterRow}>
-         <TouchableOpacity 
-           style={[styles.categoryPill, !filterVirgin && styles.activePill]}
-           onPress={() => setFilterVirgin(false)}
-         >
-           <Text style={[styles.categoryText, !filterVirgin && styles.activeCategoryText]}>All</Text>
-         </TouchableOpacity>
-         
-         <TouchableOpacity 
-           style={[styles.categoryPill, filterVirgin && styles.activePill]}
-           onPress={() => setFilterVirgin(true)}
-         >
-           <Text style={[styles.categoryText, filterVirgin && styles.activeCategoryText]}>Virgin (0%)</Text>
-         </TouchableOpacity>
-      </View>
-      
-      <Text style={styles.sectionTitle}>Cocktail Menu</Text>
-    </View>
-  );
+  const displayedCocktails = cocktails.filter(c => {
+    switch (activeFilter) {
+      case 'All': return true;
+      case 'Virgin': return c.isVirgin;
+      case 'Alcoholic': return !c.isVirgin;
+      case 'Vodka':
+      case 'Rum':
+      case 'Gin':
+      case 'Tequila':
+      case 'Whiskey':
+        return true; 
+      default: return true; 
+    }
+  });
 
   const renderItem = ({ item }) => (
     <TouchableOpacity 
-      style={styles.card}
+      style={styles.gridCard}
       onPress={() => navigation.navigate('CocktailDetail', { id: item.id, name: item.name })}
     >
-      <View style={styles.cardImagePlaceholder}>
-        <Ionicons name={item.isVirgin ? "cafe" : "wine"} size={24} color={theme.colors.primary} />
-      </View>
+      {/* 1. KÉP */}
+      <Image 
+        source={{ uri: item.imageUrl }} 
+        style={styles.cardImage} 
+        resizeMode="cover"
+      />
       
       <View style={styles.cardContent}>
-        <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>{item.name}</Text>
-          {item.isVirgin && (
-            <View style={styles.virginBadge}>
-              <Text style={styles.virginText}>VIRGIN</Text>
-            </View>
-          )}
-        </View>
+        {/* 2. NÉV */}
+        <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
+        
+        {/* 3. VIRGIN FELIRAT (Közvetlen alatta) */}
+        {item.isVirgin && (
+          <View style={styles.virginBadge}>
+            <Text style={styles.virginText}>VIRGIN</Text>
+          </View>
+        )}
       </View>
-      
-      <Ionicons name="chevron-forward" size={20} color={theme.colors.textSecondary} />
     </TouchableOpacity>
   );
 
@@ -97,7 +117,17 @@ export default function HomeScreen() {
         data={displayedCocktails}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        ListHeaderComponent={renderHeader}
+        
+        numColumns={3} 
+        key={3} 
+        columnWrapperStyle={styles.columnWrapper} 
+        
+        ListHeaderComponent={
+          <HomeHeader 
+            activeFilter={activeFilter} 
+            setActiveFilter={setActiveFilter}
+          />
+        }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -117,34 +147,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    paddingHorizontal: theme.spacing.m,
-    paddingBottom: 100, 
+    paddingBottom: 100,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  columnWrapper: {
+    paddingHorizontal: theme.spacing.m,
+    justifyContent: 'flex-start',
+    gap: 10, 
+    marginBottom: 10,
+  },
+  
+  // --- KÁRTYA STÍLUSOK ---
+  gridCard: {
+    width: CARD_WIDTH, 
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    overflow: 'hidden',
     alignItems: 'center',
+    paddingBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    // Eltávolítottam a fix magasságot, hogy a tartalomhoz igazodjon
+  },
+  cardImage: {
+    width: '100%',
+    height: CARD_WIDTH, 
+    backgroundColor: '#eee',
+  },
+  cardContent: {
+    padding: 8,
+    alignItems: 'flex-start', // Balra igazít mindent
+    width: '100%',
+  },
+  cardTitle: {
+    color: theme.colors.text,
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'left',
+    marginBottom: 2, // Csak 2 pixel hely a név és a Virgin között (nagyon szoros)
+    // height: 40,  <-- EZT KIVETTEM, HOGY NE LEGYEN LYUK
+  },
+  virginBadge: {
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    alignSelf: 'flex-start', // Balra tapad
+    marginTop: 0, // Biztos ami biztos
+  },
+  virginText: {
+    color: '#166534',
+    fontSize: 9,
+    fontWeight: '800',
+  },
+
+  // --- HEADER STÍLUSOK (VÁLTOZATLAN) ---
+  header: {
     marginTop: theme.spacing.m,
     marginBottom: theme.spacing.l,
+    paddingHorizontal: theme.spacing.m,
   },
-  greeting: {
-    color: theme.colors.textSecondary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  title: {
+  appName: {
     color: theme.colors.text,
-    fontSize: 28,
+    fontSize: 36,
     fontWeight: 'bold',
   },
-  profileButton: {
-    backgroundColor: theme.colors.surface,
-    padding: 10,
-    borderRadius: 12,
-  },
-  filterRow: {
-    flexDirection: 'row',
+  filterContainer: {
     marginBottom: 20,
+  },
+  filterScrollContent: {
+    paddingHorizontal: theme.spacing.m,
   },
   categoryPill: {
     paddingVertical: 8,
@@ -170,46 +244,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: theme.spacing.m,
+    paddingHorizontal: theme.spacing.m,
   },
-  card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 16,
-    padding: theme.spacing.m,
-    marginBottom: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardImagePlaceholder: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(244, 63, 94, 0.1)', 
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: theme.spacing.m,
-  },
-  cardContent: {
-    flex: 1,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  cardTitle: {
-    color: theme.colors.text,
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginRight: 10,
-  },
-  virginBadge: {
-    backgroundColor: theme.colors.secondary,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  virginText: {
-    color: 'white',
-    fontSize: 10,
-    fontWeight: 'bold',
-  }
 });
