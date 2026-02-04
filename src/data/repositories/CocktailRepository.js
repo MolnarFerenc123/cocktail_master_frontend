@@ -14,7 +14,8 @@ export const CocktailRepository = {
         isVirgin: dto.isVirgin,
         imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(dto.name)}&background=random&size=256`,
         ingredients: [],
-        steps: []
+        steps: [],
+        hasAnimation: true
       }));
     } catch (error) {
       console.error("Repo Error (List):", error);
@@ -58,7 +59,8 @@ export const CocktailRepository = {
         isVirgin: dto.isVirgin,
         imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(dto.name)}&background=random&size=512`,
         ingredients: ingredients,
-        steps: steps
+        steps: steps,
+        hasAnimation: true
       });
 
     } catch (error) {

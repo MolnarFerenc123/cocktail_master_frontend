@@ -6,7 +6,6 @@ import { CocktailDetailViewModel } from '../viewmodels/CocktailDetailViewModel';
 
 export default function CocktailDetailScreen({ route, navigation }) {
   const { id } = route.params;
-
   const { cocktail, loading, error, loadCocktail } = CocktailDetailViewModel();
 
   useEffect(() => {
@@ -35,27 +34,21 @@ export default function CocktailDetailScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       
+      {/* KÉP HEADER + VISSZA GOMB (Változatlan) */}
       <View style={styles.imageHeader}>
         {cocktail.imageUrl ? (
-            <Image 
-                source={{ uri: cocktail.imageUrl }} 
-                style={{ width: '100%', height: '100%' }} 
-                resizeMode="cover" 
-            />
+            <Image source={{ uri: cocktail.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
         ) : (
             <View style={styles.placeholderImage}>
                 <Ionicons name="wine" size={80} color={theme.colors.primary} />
             </View>
         )}
-        
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => navigation.goBack()}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="white" />
         </TouchableOpacity>
       </View>
 
+      {/* TARTALOM */}
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>{cocktail.name}</Text>
@@ -66,29 +59,27 @@ export default function CocktailDetailScreen({ route, navigation }) {
           )}
         </View>
 
-        <Text style={styles.category}>
-            {cocktail.categoryLabel}
-        </Text>
+        <Text style={styles.category}>{cocktail.categoryLabel}</Text>
 
-        <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Padding Bottom növelése, hogy a gomb ne takarja ki a lista végét */}
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           
+          {/* ... Ingredients (Változatlan) ... */}
           {cocktail.ingredients.length > 0 && (
             <>
                 <Text style={styles.sectionTitle}>Ingredients</Text>
                 {cocktail.ingredients.map((ing, index) => (
                     <View key={index} style={styles.ingredientRow}>
                         <View style={styles.bullet} />
-                        <Text style={styles.ingredientText}>
-                            {ing.formatted} 
-                        </Text>
+                        <Text style={styles.ingredientText}>{ing.formatted}</Text>
                     </View>
                 ))}
                 <View style={styles.divider} />
             </>
           )}
 
+          {/* ... Steps (Változatlan) ... */}
           <Text style={styles.sectionTitle}>Instructions</Text>
-          
           {cocktail.sortedSteps.length === 0 ? (
              <Text style={{ fontStyle: 'italic', color: '#888' }}>Nincs rögzített leírás.</Text>
           ) : (
@@ -97,15 +88,23 @@ export default function CocktailDetailScreen({ route, navigation }) {
                     <View style={styles.stepNumberBadge}>
                         <Text style={styles.stepNumber}>{step.number}</Text>
                     </View>
-                    <Text style={styles.stepText}>
-                        {step.fullDescription}
-                    </Text>
+                    <Text style={styles.stepText}>{step.fullDescription}</Text>
                 </View>
              ))
           )}
-
-          <View style={{height: 40}} /> 
         </ScrollView>
+
+        {/* --- ÚJ PLAY GOMB (Csak ha van animáció) --- */}
+        {cocktail.hasAnimation && (
+          <TouchableOpacity 
+            style={styles.playButton}
+            onPress={() => console.log("Play Animation Pressed")} // Itt navigálsz majd az animációra
+            activeOpacity={0.8}
+          >
+            <Ionicons name="play" size={32} color="white" style={{ marginLeft: 4 }} />
+          </TouchableOpacity>
+        )}
+
       </View>
     </View>
   );
@@ -248,5 +247,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
     lineHeight: 22,
+  },
+  playButton: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: theme.colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+    zIndex: 10,
   }
 });

@@ -1,11 +1,12 @@
 export class Cocktail {
-  constructor({ id, name, isVirgin, imageUrl, ingredients = [], steps = [] }) {
+  constructor({ id, name, isVirgin, imageUrl, ingredients = [], steps = [], hasAnimation = false }) {
     this.id = id;
     this.name = name;
     this.isVirgin = isVirgin;
     this.imageUrl = imageUrl;
     this.ingredients = ingredients;
     this.steps = steps;
+    this.hasAnimation = hasAnimation;
   }
 
   get categoryLabel() {
