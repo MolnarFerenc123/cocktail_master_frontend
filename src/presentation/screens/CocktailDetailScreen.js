@@ -94,15 +94,14 @@ export default function CocktailDetailScreen({ route, navigation }) {
           )}
         </ScrollView>
 
-        {/* --- ÚJ PLAY GOMB (Csak ha van animáció) --- */}
         {cocktail.hasAnimation && (
           <TouchableOpacity 
-            style={styles.playButton}
-            onPress={() => console.log("Play Animation Pressed")} // Itt navigálsz majd az animációra
-            activeOpacity={0.8}
-          >
-            <Ionicons name="play" size={32} color="white" style={{ marginLeft: 4 }} />
-          </TouchableOpacity>
+    style={styles.playButton}
+    onPress={() => navigation.navigate('Animation', { cocktail: cocktail })}
+    activeOpacity={0.8}
+  >
+    <Ionicons name="play" size={32} color="white" style={{ marginLeft: 4 }} />
+  </TouchableOpacity>
         )}
 
       </View>

@@ -7,6 +7,7 @@ import HomeScreen from './src/presentation/screens/HomeScreen';
 import CocktailDetailScreen from './src/presentation/screens/CocktailDetailScreen';
 import { View, Text } from 'react-native';
 import { theme } from './src/core/theme';
+import AnimationScreen from './src/presentation/screens/AnimationScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -50,6 +51,7 @@ export default function App() {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Main" component={BottomTabs} />
         <Stack.Screen name="CocktailDetail" component={CocktailDetailScreen} />
+        <Stack.Screen name="Animation" component={AnimationScreen} options={{ presentation: 'modal' }} />
       </Stack.Navigator>
     </NavigationContainer>
   );
