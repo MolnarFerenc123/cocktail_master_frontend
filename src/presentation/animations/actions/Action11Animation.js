@@ -1,55 +1,43 @@
 import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Dimensions, Animated, Easing } from 'react-native';
+import { View, StyleSheet, Dimensions, Animated, Text } from 'react-native';
 import { theme } from '../../../core/theme';
-
-import { MargaritaGlass } from '../assets/glasses/MargaritaGlass';
-import { MartiniGlass } from '../assets/glasses/MartiniGlass';
-import { HighballGlass } from '../assets/glasses/HighballGlass';
+import { RegularGlass } from '../assets/glasses/RegularGlass';
 
 const { width } = Dimensions.get('window');
 
-const getGlassComponent = (glassType) => {
-  const standardizedType = glassType?.toLowerCase() || '';
-  switch (standardizedType) {
-    case 'margarita':
-    case 'margarita glass':
-      return <MargaritaGlass color={theme.colors.primary} size={150} />;
-    case 'martini':
-    case 'martini glass':
-    case 'cocktail glass':
-      return <MartiniGlass color={theme.colors.primary} size={150} />;
-    case 'highball':
-    case 'collins':
-      return <HighballGlass color={theme.colors.primary} size={150} />;
-    default:
-      return <HighballGlass color={theme.colors.textSecondary} size={150} />;
-  }
-};
-
-export const Action11Animation = ({ glassType }) => {
-  const translateX = useRef(new Animated.Value(-width)).current;
+export const Action11Animation = ({ glassType, onComplete }) => {
+  const translateX = useRef(new Animated.Value(width)).current;
+  const opacity = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     Animated.spring(translateX, {
       toValue: 0,
       useNativeDriver: true,
-      bounciness: 12,
-      speed: 6,
-      delay: 300
-    }).start();
+      bounciness: 8,
+      speed: 10,
+    }).start(({ finished }) => {
+      if (finished) {
+        setTimeout(() => {
+           if (onComplete) onComplete();
+        }, 1500);
+      }
+    });
   }, []);
-
-  const GlassSvg = getGlassComponent(glassType);
 
   return (
     <View style={styles.container}>
       <Animated.View 
         style={[
           styles.glassContainer, 
-          { transform: [{ translateX }] }
+          { transform: [{ translateX }], opacity }
         ]}
       >
-        {GlassSvg}
+        <RegularGlass 
+            color={theme.colors.primary} 
+            size={300}
+        />
+        
+        <Text style={styles.label}>{glassType || "Glass"}</Text>
       </Animated.View>
     </View>
   );
@@ -59,14 +47,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: theme.colors.background,
+    alignItems: 'center', 
+    width: '100%',
   },
   glassContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
     shadowColor: theme.colors.primary,
     shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.2,
-    shadowRadius: 15,
-    elevation: 5,
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  label: {
+    marginTop: 30,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    textTransform: 'capitalize',
+    letterSpacing: 1
   }
 });

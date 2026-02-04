@@ -1,6 +1,7 @@
 export class Step {
-  constructor({ id, number, description, details }) {
+  constructor({ id, actionId, number, description, details }) {
     this.id = id;
+    this.actionId = actionId;
     this.number = number;
     this._description = description || "";
     this._details = details || {};

@@ -48,6 +48,7 @@ export const CocktailRepository = {
 
       const steps = dto.steps.map(s => new Step({
         id: s.stepId,
+        actionId: s.actionId,
         number: s.stepNumber,
         description: s.description,
         details: s.details
