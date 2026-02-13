@@ -3,15 +3,15 @@ export class Step {
     this.id = id;
     this.actionId = actionId;
     this.number = number;
-    this._description = description || "";
-    this._details = details || {};
+    this.description = description || "";
+    this.details = details || {};
   }
 
   get fullDescription() {
-    let text = this._description;
+    let text = this.description;
     
-    Object.keys(this._details).forEach((key) => {
-      const value = this._details[key];
+    Object.keys(this.details).forEach((key) => {
+      const value = this.details[key];
       const placeholder = `[${key}]`;
 
       if (value !== null && value !== undefined) {

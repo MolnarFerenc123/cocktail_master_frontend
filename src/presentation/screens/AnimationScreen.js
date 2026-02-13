@@ -2,7 +2,12 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, ActivityIndicator, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../../core/theme';
+import { Action12Animation } from '../animations/actions/Action12Animation';
 import { Action11Animation } from '../animations/actions/Action11Animation';
+import { Action13Animation } from '../animations/actions/Action13Animation';
+import { Action14Animation } from '../animations/actions/Action14Animation';
+import { Action16Animation } from '../animations/actions/Action16Animation';
+import { Action17Animation } from '../animations/actions/Action17Animation';
 
 export default function AnimationScreen({ route, navigation }) {
   const { cocktail } = route.params;
@@ -33,25 +38,57 @@ export default function AnimationScreen({ route, navigation }) {
       return (
         <View style={styles.centerContent}>
           <Ionicons name="checkmark-circle" size={100} color={theme.colors.primary} />
-          <Text style={styles.finishText}>Koktél Kész!</Text>
+          <Text style={styles.finishText}>Cocktail is Done</Text>
           <TouchableOpacity style={styles.restartButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.btnText}>Vissza a recepthez</Text>
+            <Text style={styles.btnText}>Back to recipe</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     if (!currentStep) return <ActivityIndicator />;
+    console.log
 
     switch (currentStep.actionId) {
       case 11:
         return (
           <Action11Animation 
-            key={currentStepIndex}
+            key={currentStepIndex} 
             glassType={currentStep.details?.ingredient || "Glass"} 
           />
         );
-
+      case 12:
+        return (
+          <Action12Animation 
+            key={currentStepIndex} 
+            ingredient={currentStep.details?.ingredient || "lime"} 
+          />
+        );
+      case 13:
+        return (
+          <Action13Animation
+            key={currentStepIndex}
+            ingredient={currentStep.details?.ingredient || "salt"}
+          />
+        );
+      case 14:
+        return <Action14Animation key={currentStepIndex} />;
+      case 16:
+        return (
+          <Action16Animation 
+            key={currentStepIndex} 
+            ingredient={currentStep.details?.ingredient}
+            amount={currentStep.details?.amount}
+            unit={currentStep.details?.unit}
+          />
+        );
+      case 17:
+        return (
+            <Action17Animation 
+                key={currentStepIndex}
+                amount={currentStep.details?.amount}
+            />
+        );
       default:
         return (
           <PlaceholderAnimation step={currentStep} />
@@ -62,7 +99,6 @@ export default function AnimationScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.headerContainer}>
-        
         <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
           <Ionicons name="close" size={28} color={theme.colors.textSecondary} />
         </TouchableOpacity>
@@ -79,11 +115,11 @@ export default function AnimationScreen({ route, navigation }) {
           <View style={styles.stepIndicatorContainer}>
             {!isFinished ? (
               <>
-                <Text style={styles.stepTitle}>Lépés {currentStepIndex + 1}</Text>
+                <Text style={styles.stepTitle}>Step {currentStepIndex + 1}</Text>
                 <Text style={styles.stepSubTitle}>/ {steps.length}</Text>
               </>
             ) : (
-              <Text style={styles.stepTitle}>KÉSZ</Text>
+              <Text style={styles.stepTitle}>DONE</Text>
             )}
           </View>
 
@@ -97,15 +133,15 @@ export default function AnimationScreen({ route, navigation }) {
         </View>
       </View>
 
+      {!isFinished && currentStep && (
+        <View style={styles.descriptionBlock}>
+          <Text style={styles.description}>{currentStep.fullDescription}</Text>
+        </View>
+      )}
+
       <View style={styles.stage}>
         {renderCurrentAnimation()}
       </View>
-      
-      {!isFinished && currentStep && (
-        <View style={styles.footer}>
-          <Text style={styles.description}>{currentStep.description}</Text>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
@@ -114,7 +150,7 @@ const PlaceholderAnimation = ({ step }) => {
   return (
     <View style={styles.centerContent}>
       <Text style={styles.placeholderTitle}>Action ID: {step.actionId}</Text>
-      <Text style={styles.placeholderDesc}>Animáció fejlesztés alatt...</Text>
+      <Text style={styles.placeholderDesc}>Animation is under development</Text>
       <Ionicons name="construct-outline" size={50} color="#666" style={{marginTop: 20}} />
     </View>
   );
@@ -124,11 +160,12 @@ const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: theme.colors.background,
-    paddingTop: 20
+    paddingTop: 20 
   },
   headerContainer: {
     paddingHorizontal: 20,
-    marginBottom: 10,
+    marginBottom: 5,
+    zIndex: 10,
   },
   closeButton: {
     alignSelf: 'flex-end',
@@ -138,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 0,
     backgroundColor: theme.colors.surface,
     borderRadius: 15,
     paddingVertical: 10,
@@ -167,10 +204,23 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.textSecondary,
   },
+  descriptionBlock: {
+    paddingHorizontal: 25,
+    paddingVertical: 15,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 60,
+  },
+  description: { 
+    fontSize: 18, 
+    textAlign: 'center', 
+    color: theme.colors.text,
+    lineHeight: 26,
+    fontWeight: '500',
+  },
   stage: { 
     flex: 1, 
     justifyContent: 'center',
-    marginTop: -40
   },
   centerContent: { 
     alignItems: 'center', 
@@ -191,20 +241,8 @@ const styles = StyleSheet.create({
   },
   btnText: { 
     color: '#fff', 
-    fontWeight: 'bold',
+    fontWeight: 'bold', 
     fontSize: 16
-  },
-  footer: { 
-    padding: 20, 
-    alignItems: 'center', 
-    paddingBottom: 40,
-    minHeight: 100
-  },
-  description: { 
-    fontSize: 18, 
-    textAlign: 'center', 
-    color: theme.colors.text,
-    lineHeight: 26
   },
   placeholderTitle: { fontSize: 24, fontWeight: 'bold', color: '#888' },
   placeholderDesc: { fontSize: 14, color: '#aaa', marginTop: 5 }

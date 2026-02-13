@@ -12,22 +12,12 @@ export const BostonShaker = ({ color = "#555", size = 150 }) => (
     </Defs>
 
     <Path
-      d="M 20 30 L 30 95 L 70 95 L 80 30 Z"
+      d="M 20 10 L 30 95 L 70 95 L 80 10 Z"
       stroke={color}
       strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
       fill="url(#metalGradient)"
-    />
-    <Path
-      d="M 35 10 L 42 45 L 65 40 L 65 5 Z"
-      stroke={color}
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="url(#metalGradient)"
-      opacity="0.9"
-      transform="rotate(-8, 50, 50)"
     />
   </Svg>
 );
