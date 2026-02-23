@@ -1,15 +1,32 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, Image, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import { theme } from '../../core/theme';
-import { HomeViewModel } from '../viewmodels/HomeViewModel';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  Image,
+  Dimensions,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { theme } from "../../core/theme";
+import { HomeViewModel } from "../viewmodels/HomeViewModel";
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = (width - (theme.spacing.m * 2) - 20) / 3;
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = (width - theme.spacing.m * 2 - 20) / 3;
 
 const CATEGORIES = [
-  'All', 'Virgin', 'Alcoholic', 'Vodka', 'Rum', 'Gin', 'Tequila', 'Whiskey'
+  "All",
+  "Virgin",
+  "Alcoholic",
+  "Vodka",
+  "Rum",
+  "Gin",
+  "Tequila",
+  "Whiskey",
 ];
 
 const HomeHeader = ({ activeFilter, setActiveFilter }) => {
@@ -20,25 +37,33 @@ const HomeHeader = ({ activeFilter, setActiveFilter }) => {
       </View>
 
       <View style={styles.filterContainer}>
-        <ScrollView 
-          horizontal 
+        <ScrollView
+          horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterScrollContent}
         >
           {CATEGORIES.map((cat) => (
-            <TouchableOpacity 
+            <TouchableOpacity
               key={cat}
-              style={[styles.categoryPill, activeFilter === cat && styles.activePill]}
+              style={[
+                styles.categoryPill,
+                activeFilter === cat && styles.activePill,
+              ]}
               onPress={() => setActiveFilter(cat)}
             >
-              <Text style={[styles.categoryText, activeFilter === cat && styles.activeCategoryText]}>
+              <Text
+                style={[
+                  styles.categoryText,
+                  activeFilter === cat && styles.activeCategoryText,
+                ]}
+              >
                 {cat}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
       </View>
-      
+
       <Text style={styles.sectionTitle}>Cocktail Menu</Text>
     </View>
   );
@@ -46,23 +71,25 @@ const HomeHeader = ({ activeFilter, setActiveFilter }) => {
 
 export default function HomeScreen() {
   const navigation = useNavigation();
-  
+
   const { cocktails, loading, activeFilter, setActiveFilter } = HomeViewModel();
 
   const renderItem = ({ item }) => (
-  <TouchableOpacity 
-    style={styles.gridCard}
-    onPress={() => navigation.navigate('CocktailDetail', { id: item.id })}
-  >
-      <Image 
-        source={{ uri: item.imageUrl }} 
-        style={styles.cardImage} 
+    <TouchableOpacity
+      style={styles.gridCard}
+      onPress={() => navigation.navigate("CocktailDetail", { id: item.id })}
+    >
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={styles.cardImage}
         resizeMode="cover"
       />
-      
+
       <View style={styles.cardContent}>
-        <Text style={styles.cardTitle} numberOfLines={2}>{item.name}</Text>
-        
+        <Text style={styles.cardTitle} numberOfLines={2}>
+          {item.name}
+        </Text>
+
         {item.isVirgin && (
           <View style={styles.virginBadge}>
             <Text style={styles.virginText}>VIRGIN</Text>
@@ -81,19 +108,17 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <FlatList
         data={cocktails}
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
-        
-        numColumns={3} 
-        key={3} 
-        columnWrapperStyle={styles.columnWrapper} 
-        
+        numColumns={3}
+        key={3}
+        columnWrapperStyle={styles.columnWrapper}
         ListHeaderComponent={
-          <HomeHeader 
-            activeFilter={activeFilter} 
+          <HomeHeader
+            activeFilter={activeFilter}
             setActiveFilter={setActiveFilter}
           />
         }
@@ -112,25 +137,25 @@ const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
     backgroundColor: theme.colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   listContent: {
     paddingBottom: 100,
   },
   columnWrapper: {
     paddingHorizontal: theme.spacing.m,
-    justifyContent: 'flex-start',
-    gap: 10, 
+    justifyContent: "flex-start",
+    gap: 10,
     marginBottom: 10,
   },
-  
+
   gridCard: {
-    width: CARD_WIDTH, 
+    width: CARD_WIDTH,
     backgroundColor: theme.colors.surface,
     borderRadius: 12,
-    overflow: 'hidden',
-    alignItems: 'center',
+    overflow: "hidden",
+    alignItems: "center",
     paddingBottom: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -139,34 +164,34 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   cardImage: {
-    width: '100%',
-    height: CARD_WIDTH, 
-    backgroundColor: '#eee',
+    width: "100%",
+    height: CARD_WIDTH,
+    backgroundColor: "#eee",
   },
   cardContent: {
     padding: 8,
-    alignItems: 'flex-start', 
-    width: '100%',
+    alignItems: "flex-start",
+    width: "100%",
   },
   cardTitle: {
     color: theme.colors.text,
     fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'left',
-    marginBottom: 2, 
+    fontWeight: "bold",
+    textAlign: "left",
+    marginBottom: 2,
   },
   virginBadge: {
-    backgroundColor: '#dcfce7',
+    backgroundColor: "#dcfce7",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
-    alignSelf: 'flex-start',
-    marginTop: 0, 
+    alignSelf: "flex-start",
+    marginTop: 0,
   },
   virginText: {
-    color: '#166534',
+    color: "#166534",
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: "800",
   },
 
   header: {
@@ -177,7 +202,7 @@ const styles = StyleSheet.create({
   appName: {
     color: theme.colors.text,
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   filterContainer: {
     marginBottom: 20,
@@ -199,15 +224,15 @@ const styles = StyleSheet.create({
   },
   categoryText: {
     color: theme.colors.textSecondary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   activeCategoryText: {
-    color: 'white',
+    color: "white",
   },
   sectionTitle: {
     color: theme.colors.text,
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: theme.spacing.m,
     paddingHorizontal: theme.spacing.m,
   },

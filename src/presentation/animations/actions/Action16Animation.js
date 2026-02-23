@@ -5,7 +5,6 @@ import { BostonShaker } from '../assets/tools/BostonShaker';
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "ml" }) => {
-  // Egyetlen animációs érték vezérli a fázisokat: 0 -> 1 (beérkezés), 1 -> 2 (kifolyás)
   const progress = useRef(new Animated.Value(0)).current;
 
   const getLiquidColor = (ingName) => {
@@ -29,7 +28,6 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
 
   const color = getLiquidColor(ingredient);
 
-  // Ha az adatbázisból null jön, használjunk alapértelmezett értéket
   const safeAmount = (amount === null || amount === undefined) ? 30 : amount;
 
   const calculateDuration = () => {
@@ -42,7 +40,7 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
       case "oz": multiplier = 29.57; break;
     }
     const ml = parseFloat(safeAmount) * multiplier;
-    if (isNaN(ml) || ml <= 0) return 3; // default 3 sec (30ml)
+    if (isNaN(ml) || ml <= 0) return 3;
     return ml / 10; 
   };
 
@@ -56,10 +54,8 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
 
     const animation = Animated.loop(
       Animated.sequence([
-        // Resetelés
         Animated.timing(progress, { toValue: 0, duration: 0, useNativeDriver: false }),
         
-        // 1. Fázis: Beesés (0 -> 1)
         Animated.timing(progress, {
           toValue: 1, 
           duration: dropInDuration,
@@ -67,10 +63,8 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
           easing: Easing.in(Easing.quad),
         }),
         
-        // 2. Fázis: Folyás
         Animated.delay(pourDurationMs),
         
-        // 3. Fázis: Kifolyás (1 -> 2)
         Animated.timing(progress, {
           toValue: 2,
           duration: fallOutDuration,
@@ -78,7 +72,6 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
           easing: Easing.in(Easing.quad),
         }),
 
-        // 4. Szünet
         Animated.delay(pauseMs)
       ])
     );
@@ -106,12 +99,10 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
   return (
     <View style={styles.container}>
       <View style={styles.scene}>
-        {/* Shaker (Előtérben) */}
         <View style={styles.shakerContainer}>
           <BostonShaker size={300} />
         </View>
 
-        {/* Folyadék réteg (Háttrében) */}
         <View style={styles.liquidLayer}>
             <Animated.View 
                 style={[
@@ -154,11 +145,11 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    alignItems: 'center', // Középre igazítja a sugarat
+    alignItems: 'center',
     zIndex: 1,
   },
   stream: {
-    width: 14, // Kicsit vastagabb sugár
+    width: 14,
     borderRadius: 7,
     position: 'absolute',
   }

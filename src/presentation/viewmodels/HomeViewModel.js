@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
-import { GetCocktails } from '../../domain/usecases/GetCocktails';
+import { useState, useEffect, useMemo } from "react";
+import { GetCocktails } from "../../domain/usecases/GetCocktails";
 
 export const HomeViewModel = () => {
   const [allCocktails, setAllCocktails] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState('All');
+  const [activeFilter, setActiveFilter] = useState("All");
 
   const getCocktailsUseCase = new GetCocktails();
 
@@ -25,18 +25,22 @@ export const HomeViewModel = () => {
   };
 
   const displayedCocktails = useMemo(() => {
-    return allCocktails.filter(c => {
+    return allCocktails.filter((c) => {
       switch (activeFilter) {
-        case 'All': return true;
-        case 'Virgin': return c.isVirgin;
-        case 'Alcoholic': return !c.isVirgin;
-        case 'Vodka':
-        case 'Rum':
-        case 'Gin':
-        case 'Tequila':
-        case 'Whiskey':
-          return true; 
-        default: return true; 
+        case "All":
+          return true;
+        case "Virgin":
+          return c.isVirgin;
+        case "Alcoholic":
+          return !c.isVirgin;
+        case "Vodka":
+        case "Rum":
+        case "Gin":
+        case "Tequila":
+        case "Whiskey":
+          return true;
+        default:
+          return true;
       }
     });
   }, [allCocktails, activeFilter]);
@@ -46,6 +50,6 @@ export const HomeViewModel = () => {
     loading,
     activeFilter,
     setActiveFilter,
-    reload: loadCocktails
+    reload: loadCocktails,
   };
 };

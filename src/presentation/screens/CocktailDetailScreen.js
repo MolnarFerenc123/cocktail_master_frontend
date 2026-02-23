@@ -34,7 +34,6 @@ export default function CocktailDetailScreen({ route, navigation }) {
   return (
     <View style={styles.container}>
       
-      {/* KÉP HEADER + VISSZA GOMB (Változatlan) */}
       <View style={styles.imageHeader}>
         {cocktail.imageUrl ? (
             <Image source={{ uri: cocktail.imageUrl }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
@@ -48,7 +47,6 @@ export default function CocktailDetailScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* TARTALOM */}
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
           <Text style={styles.title}>{cocktail.name}</Text>
@@ -61,10 +59,8 @@ export default function CocktailDetailScreen({ route, navigation }) {
 
         <Text style={styles.category}>{cocktail.categoryLabel}</Text>
 
-        {/* Padding Bottom növelése, hogy a gomb ne takarja ki a lista végét */}
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 80 }}>
           
-          {/* ... Ingredients (Változatlan) ... */}
           {cocktail.ingredients.length > 0 && (
             <>
                 <Text style={styles.sectionTitle}>Ingredients</Text>
@@ -78,7 +74,6 @@ export default function CocktailDetailScreen({ route, navigation }) {
             </>
           )}
 
-          {/* ... Steps (Változatlan) ... */}
           <Text style={styles.sectionTitle}>Instructions</Text>
           {cocktail.sortedSteps.length === 0 ? (
              <Text style={{ fontStyle: 'italic', color: '#888' }}>Nincs rögzített leírás.</Text>
