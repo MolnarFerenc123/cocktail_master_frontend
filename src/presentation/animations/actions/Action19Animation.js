@@ -2,85 +2,69 @@ import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Animated, Easing } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
-import { BostonShaker } from "../assets/tools/BostonShaker";
 import { IceCube } from "../assets/ingredients/IceCube";
-import { SimpleStrainer } from "../assets/tools/SimpleStrainer"; 
+import { LimeSlice } from "../assets/ingredients/LimeSlice"; 
 
-export const Action18Animation = ({
+export const Action19Animation = ({
   liquidColor = "#f59e0b",
   hasIce = false,
+  garnishVariant = "lime"
 }) => {
-  const masterAnim = useRef(new Animated.Value(0)).current;
+  const limeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
       Animated.sequence([
-        Animated.timing(masterAnim, {
+        Animated.timing(limeAnim, {
           toValue: 0,
           duration: 0,
-          useNativeDriver: false,
+          useNativeDriver: true,
         }),
-        Animated.timing(masterAnim, {
-          toValue: 100,
-          duration: 10000,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.cubic),
+        Animated.delay(500),
+        Animated.timing(limeAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+          easing: Easing.bounce, 
         }),
-        Animated.delay(1000),
-      ]),
+        Animated.delay(2000),
+      ])
     );
 
     loop.start();
     return () => loop.stop();
   }, []);
 
-  const shakerTranslateX = masterAnim.interpolate({
-    inputRange: [0, 10, 90, 100],
-    outputRange: [200, 100, 100, 200],
+  const limeTranslateX = limeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 0], 
   });
 
-  const shakerTranslateY = masterAnim.interpolate({
-    inputRange: [0, 10, 90, 100],
-    outputRange: [-100, -160, -160, -100],
+  const limeTranslateY = limeAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [-300, 0], 
   });
 
-  const shakerRotate = masterAnim.interpolate({
-    inputRange: [0, 10, 40, 60, 90, 100],
-    outputRange: ["0deg", "0deg", "-105deg", "-105deg", "0deg", "0deg"],
-  });
-
-  const streamHeight = masterAnim.interpolate({
-    inputRange: [40, 45, 60, 65],
-    outputRange: [0, 270, 270, 0],
-  });
-
-  const streamOpacity = masterAnim.interpolate({
-    inputRange: [40, 42, 63, 65],
-    outputRange: [0, 1, 1, 0],
-  });
-
-  const currentFillHeight = masterAnim.interpolate({
-    inputRange: [0, 42, 65, 100],
-    outputRange: [0, 0, 140, 140],
+  const limeRotate = limeAnim.interpolate({
+    inputRange: [0, 0.7, 1], 
+    outputRange: ["0deg", "0deg", "-30deg"], 
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.scene}>
+        
         <View style={styles.glassWrapper}>
-          <Animated.View
-            style={[
-              styles.liquidMaskContainer,
-              { height: currentFillHeight },
-            ]}
-          >
+          
+          <View style={[styles.liquidMaskContainer, { height: 140 }]}>
             <View
               style={[
                 styles.liquidTrapézShape,
                 { borderTopColor: liquidColor },
               ]}
             />
-          </Animated.View>
+          </View>
+
           {hasIce && (
             <View style={styles.iceLayer}>
               <View style={[styles.staticIce, { top: 20, left: -20, transform: [{ rotate: "15deg" }] }]}>
@@ -104,37 +88,23 @@ export const Action18Animation = ({
           <View style={styles.glassIconContainer}>
             <RegularGlass color={theme.colors.primary} size={280} />
           </View>
+
+          <Animated.View
+            style={[
+              styles.garnishPosition,
+              {
+                transform: [
+                  { translateX: limeTranslateX },
+                  { translateY: limeTranslateY },
+                  { rotate: limeRotate },
+                ],
+              },
+            ]}
+          >
+            <LimeSlice size={100} variant={garnishVariant} />
+          </Animated.View>
+
         </View>
-
-        <Animated.View
-          style={[
-            styles.stream,
-            {
-              backgroundColor: liquidColor,
-              height: streamHeight,
-              opacity: streamOpacity,
-            },
-          ]}
-        />
-
-        <Animated.View
-          style={[
-            styles.shakerAssembly,
-            {
-              transform: [
-                { translateX: shakerTranslateX },
-                { translateY: shakerTranslateY },
-                { rotate: shakerRotate },
-              ],
-            },
-          ]}
-        >
-          <View style={styles.strainerPosition}>
-            <SimpleStrainer width={140} /> 
-          </View>
-
-          <BostonShaker size={240} />
-        </Animated.View>
       </View>
     </View>
   );
@@ -201,25 +171,10 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   
-  stream: {
-    width: 6,
+  garnishPosition: {
     position: "absolute",
-    top: 55,
-    left: 168,
-    zIndex: 0,
-    borderRadius: 3,
-  },
-
-  shakerAssembly: {
-    position: "absolute",
-    top: 0,
-    zIndex: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  strainerPosition: {
-    position: 'absolute',
-    top: 20, 
-    zIndex: 10, 
+    top: -55,
+    left: -10,
+    zIndex: 15, 
   },
 });

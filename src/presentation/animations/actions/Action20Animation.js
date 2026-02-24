@@ -2,12 +2,10 @@ import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Animated, Easing } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
-import { BostonShaker } from "../assets/tools/BostonShaker";
 import { IceCube } from "../assets/ingredients/IceCube";
-import { SimpleStrainer } from "../assets/tools/SimpleStrainer"; 
 
-export const Action18Animation = ({
-  liquidColor = "#f59e0b",
+export const Action20Animation = ({
+  liquidColor = "#f59e0b", // A már benne lévő folyadék színe
   hasIce = false,
 }) => {
   const masterAnim = useRef(new Animated.Value(0)).current;
@@ -34,24 +32,26 @@ export const Action18Animation = ({
     return () => loop.stop();
   }, []);
 
-  const shakerTranslateX = masterAnim.interpolate({
+  // --- INTERPOLÁCIÓK ---
+
+  const bottleTranslateX = masterAnim.interpolate({
     inputRange: [0, 10, 90, 100],
     outputRange: [200, 100, 100, 200],
   });
 
-  const shakerTranslateY = masterAnim.interpolate({
+  const bottleTranslateY = masterAnim.interpolate({
     inputRange: [0, 10, 90, 100],
     outputRange: [-100, -160, -160, -100],
   });
 
-  const shakerRotate = masterAnim.interpolate({
+  const bottleRotate = masterAnim.interpolate({
     inputRange: [0, 10, 40, 60, 90, 100],
     outputRange: ["0deg", "0deg", "-105deg", "-105deg", "0deg", "0deg"],
   });
 
   const streamHeight = masterAnim.interpolate({
     inputRange: [40, 45, 60, 65],
-    outputRange: [0, 270, 270, 0],
+    outputRange: [0, 250, 250, 0], // Picit rövidebb a sugár, mert már van benne pia
   });
 
   const streamOpacity = masterAnim.interpolate({
@@ -59,19 +59,21 @@ export const Action18Animation = ({
     outputRange: [0, 1, 1, 0],
   });
 
+  // A LÉNYEG: A maszk már 140-ről indul (alaplé), és 180-ra töltjük (tele)
   const currentFillHeight = masterAnim.interpolate({
     inputRange: [0, 42, 65, 100],
-    outputRange: [0, 0, 140, 140],
+    outputRange: [140, 140, 180, 180], 
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.scene}>
         <View style={styles.glassWrapper}>
+          
           <Animated.View
             style={[
               styles.liquidMaskContainer,
-              { height: currentFillHeight },
+              { height: currentFillHeight }, 
             ]}
           >
             <View
@@ -81,6 +83,7 @@ export const Action18Animation = ({
               ]}
             />
           </Animated.View>
+          
           {hasIce && (
             <View style={styles.iceLayer}>
               <View style={[styles.staticIce, { top: 20, left: -20, transform: [{ rotate: "15deg" }] }]}>
@@ -110,7 +113,7 @@ export const Action18Animation = ({
           style={[
             styles.stream,
             {
-              backgroundColor: liquidColor,
+              backgroundColor: "rgba(200, 240, 255, 0.7)", // Szódavíz színe (áttetsző fehéres-kék)
               height: streamHeight,
               opacity: streamOpacity,
             },
@@ -119,21 +122,17 @@ export const Action18Animation = ({
 
         <Animated.View
           style={[
-            styles.shakerAssembly,
+            styles.bottleAssembly,
             {
               transform: [
-                { translateX: shakerTranslateX },
-                { translateY: shakerTranslateY },
-                { rotate: shakerRotate },
+                { translateX: bottleTranslateX },
+                { translateY: bottleTranslateY },
+                { rotate: bottleRotate },
               ],
             },
           ]}
         >
-          <View style={styles.strainerPosition}>
-            <SimpleStrainer width={140} /> 
-          </View>
-
-          <BostonShaker size={240} />
+          <SodaBottle />
         </Animated.View>
       </View>
     </View>
@@ -155,6 +154,8 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     position: "relative",
   },
+
+  // --- Pohár ---
   glassWrapper: {
     width: 280,
     height: 280,
@@ -201,25 +202,54 @@ const styles = StyleSheet.create({
     position: "absolute",
   },
   
+  // --- Sugár (Szóda) ---
   stream: {
-    width: 6,
+    width: 5,
     position: "absolute",
-    top: 55,
-    left: 168,
+    top: 55, // Eredeti hely, ahogy kérted
+    left: 168, // Eredeti hely, ahogy kérted
     zIndex: 0,
     borderRadius: 3,
   },
 
-  shakerAssembly: {
+  // --- Üveg Assembly ---
+  bottleAssembly: {
     position: "absolute",
     top: 0,
     zIndex: 20,
     alignItems: "center",
     justifyContent: "center",
   },
-  strainerPosition: {
-    position: 'absolute',
-    top: 20, 
-    zIndex: 10, 
+
+  // --- SZÓDÁSÜVEG STÍLUSAI ---
+  bottleContainer: {
+    alignItems: "center",
   },
+  bottleNeck: {
+    width: 16,
+    height: 60,
+    backgroundColor: "#065f46", // Sötétzöld üveg nyak
+    borderTopLeftRadius: 4,
+    borderTopRightRadius: 4,
+    borderBottomWidth: 0,
+  },
+  bottleBody: {
+    width: 60,
+    height: 160,
+    backgroundColor: "#047857", // Sötétzöld üveg test
+    borderRadius: 12,
+    marginTop: -5,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRightWidth: 4,
+    borderRightColor: "rgba(0,0,0,0.1)",
+  },
+  bottleLabel: {
+    width: 60,
+    height: 50,
+    backgroundColor: "#f8fafc",
+    borderTopWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: "#cbd5e1",
+  }
 });

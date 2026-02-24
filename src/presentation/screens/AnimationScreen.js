@@ -17,6 +17,7 @@ import { Action15Animation } from "../animations/actions/Action15Animation";
 import { Action16Animation } from "../animations/actions/Action16Animation";
 import { Action17Animation } from "../animations/actions/Action17Animation";
 import { Action18Animation } from "../animations/actions/Action18Animation";
+import { Action19Animation } from "../animations/actions/Action19Animation";
 
 export default function AnimationScreen({ route, navigation }) {
   const { cocktail } = route.params;
@@ -109,6 +110,8 @@ export default function AnimationScreen({ route, navigation }) {
         );
       case 18:
         return <Action18Animation liquidColor="#d97706" hasIce={true} />;
+      case 19:
+        return <Action19Animation liquidColor="#d97706" hasIce={true} />;
       default:
         return <PlaceholderAnimation step={currentStep} />;
     }
