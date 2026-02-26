@@ -4,29 +4,8 @@ import { BostonShaker } from '../assets/tools/BostonShaker';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "ml" }) => {
+export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "ml", pourColor = "rgba(255, 255, 255, 0.6)" }) => {
   const progress = useRef(new Animated.Value(0)).current;
-
-  const getLiquidColor = (ingName) => {
-    const name = ingName ? ingName.toLowerCase() : '';
-    
-    if (name.includes('water') || name.includes('soda') || name.includes('tonic')) return 'rgba(255, 255, 255, 0.6)';
-    if (name.includes('vodka') || name.includes('gin') || name.includes('tequila') || name.includes('white rum') || name.includes('syrup')) return 'rgba(255, 255, 255, 0.8)';
-    
-    if (name.includes('whiskey') || name.includes('bourbon') || name.includes('scotch') || name.includes('rum') || name.includes('cognac') || name.includes('brandy')) return '#b45309';
-    if (name.includes('coffee') || name.includes('kahlua')) return '#3f1c04';
-
-    if (name.includes('lime')) return '#d9f99d';
-    if (name.includes('lemon')) return '#fef08a';
-    if (name.includes('orange')) return '#fb923c';
-    if (name.includes('cranberry') || name.includes('grenadine')) return '#dc2626';
-    if (name.includes('blue') || name.includes('curacao')) return '#2563eb';
-    if (name.includes('mint')) return '#22c55e';
-
-    return 'rgba(255, 255, 255, 0.6)';
-  };
-
-  const color = getLiquidColor(ingredient);
 
   const safeAmount = (amount === null || amount === undefined) ? 30 : amount;
 
@@ -108,7 +87,7 @@ export const Action16Animation = ({ ingredient = 'water', amount = 30, unit = "m
                 style={[
                     styles.stream, 
                     { 
-                        backgroundColor: color,
+                        backgroundColor: pourColor,
                         height: height,
                         top: top,
                     }

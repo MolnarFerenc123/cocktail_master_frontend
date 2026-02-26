@@ -3,10 +3,12 @@ import { View, StyleSheet, Animated, Easing } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
 import { IceCube } from "../assets/ingredients/IceCube";
+import { CitrusWedge } from "../assets/ingredients/CitrusWedge";
 
 export const Action15Animation = ({ 
-  hasRim = false,       // Alapértelmezetten nincs kruszta
-  rimColor = "white"    // Alapértelmezett szín (cukor/só)
+  hasRim = false,       
+  rimColor = "white",
+  muddledFruit = null,
 }) => {
   const anim1 = useRef(new Animated.Value(0)).current;
   const anim2 = useRef(new Animated.Value(0)).current;
@@ -88,7 +90,6 @@ export const Action15Animation = ({
         <View style={styles.glassContainer}>
           <RegularGlass color={theme.colors.primary} size={280} />
           
-          {/* KRUSZTA (RIM) LOGIKA */}
           {hasRim && (
             <View 
               style={[
@@ -97,6 +98,18 @@ export const Action15Animation = ({
               ]} 
             />
           )}
+
+          {muddledFruit && (
+            <View style={styles.muddledFruitContainer}>
+              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "-20deg" }] }]}>
+                <CitrusWedge size={90} variant={muddledFruit} />
+              </Animated.View>
+              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "15deg" }] }]}>
+                <CitrusWedge size={90} variant={muddledFruit} />
+              </Animated.View>
+            </View>
+          )}
+
         </View>
 
         <Animated.View
@@ -195,22 +208,35 @@ const styles = StyleSheet.create({
   glassContainer: {
     position: "absolute",
     zIndex: 10,
-    alignItems: 'center', // Hogy a kruszta középre kerüljön
+    alignItems: 'center', 
   },
   cubeContainer: {
     position: "absolute",
     top: 0,
     zIndex: 1,
   },
-  // A kruszta stílusa
   crusta: {
     position: 'absolute',
-    top: 0, // A pohár tetejére igazítva
-    width: 240, // A RegularGlass szájának szélessége kb. (a 280-as mérethez igazítva)
-    height: 30, // Ovális magassága
-    borderRadius: 15, // Ovális ív
-    borderWidth: 4, // A kruszta vastagsága
+    top: 20,
+    width: 230,
+    height: 1,
+    borderRadius: 15,
+    borderWidth: 4,
     backgroundColor: 'transparent',
-    zIndex: 20, // A pohár fölé
-  }
+    zIndex: 20,
+  },
+  muddledFruitContainer: {
+    position: "absolute",
+    bottom: 5,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    width: 120,
+    height: 60,
+    zIndex: 5,
+  },
+  fruitWrapper: {
+    marginHorizontal: -20,
+    marginBottom: -20,
+  },
 });

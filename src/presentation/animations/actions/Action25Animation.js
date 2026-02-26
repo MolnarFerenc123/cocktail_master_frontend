@@ -2,100 +2,70 @@ import React, { useEffect, useRef } from "react";
 import { View, StyleSheet, Animated, Easing } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
-import { BostonShaker } from "../assets/tools/BostonShaker";
 import { IceCube } from "../assets/ingredients/IceCube";
-import { SimpleStrainer } from "../assets/tools/SimpleStrainer"; 
 import { CitrusWedge } from "../assets/ingredients/CitrusWedge";
+import { BarSpoon } from "../assets/tools/BarSpoon";
 
-export const Action18Animation = ({
-  liquidColor = "#f59e0b",
-  initialFillLevel = 0,
-  fillLevel = 140,
+export const Action25Animation = ({
+  liquidColor = "transparent",
+  fillLevel = 0,
   hasIce = false,
   hasRim = false,
   rimColor = "white",
   muddledFruit = null,
 }) => {
-  const masterAnim = useRef(new Animated.Value(0)).current;
+  const stirAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     const loop = Animated.loop(
-      Animated.sequence([
-        Animated.timing(masterAnim, {
-          toValue: 0,
-          duration: 0,
-          useNativeDriver: false,
-        }),
-        Animated.timing(masterAnim, {
-          toValue: 100,
-          duration: 10000,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.cubic),
-        }),
-        Animated.delay(1000),
-      ]),
+      Animated.timing(stirAnim, {
+        toValue: 1,
+        duration: 2300,
+        useNativeDriver: true,
+        easing: Easing.linear,
+      })
     );
 
     loop.start();
     return () => loop.stop();
   }, []);
 
-  const shakerTranslateX = masterAnim.interpolate({
-    inputRange: [0, 10, 90, 100],
-    outputRange: [200, 100, 100, 200],
+  const spoonTranslateX = stirAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: [0, 65, 0, -65, 0],
   });
 
-  const shakerTranslateY = masterAnim.interpolate({
-    inputRange: [0, 10, 90, 100],
-    outputRange: [-100, -160, -160, -100],
+  const spoonTranslateY = stirAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: [-10, 5, 15, 5, -10],
   });
 
-  const shakerRotate = masterAnim.interpolate({
-    inputRange: [0, 10, 40, 60, 90, 100],
-    outputRange: ["0deg", "0deg", "-105deg", "-105deg", "0deg", "0deg"],
-  });
-
-  const streamHeight = masterAnim.interpolate({
-    inputRange: [40, 45, 60, 65],
-    outputRange: [0, 270, 270, 0],
-  });
-
-  const streamOpacity = masterAnim.interpolate({
-    inputRange: [40, 42, 63, 65],
-    outputRange: [0, 1, 1, 0],
-  });
-
-  const currentFillHeight = masterAnim.interpolate({
-    inputRange: [0, 42, 65, 100],
-    outputRange: [initialFillLevel, initialFillLevel, fillLevel, fillLevel],
+  const spoonRotate = stirAnim.interpolate({
+    inputRange: [0, 0.25, 0.5, 0.75, 1],
+    outputRange: ["0deg", "15deg", "0deg", "-15deg", "0deg"],
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.scene}>
         <View style={styles.glassWrapper}>
-          <Animated.View
-            style={[
-              styles.liquidMaskContainer,
-              { height: currentFillHeight },
-            ]}
-          >
+          <View style={[styles.liquidMaskContainer, { height: fillLevel }]}>
             <View
               style={[
                 styles.liquidTrapézShape,
                 { borderTopColor: liquidColor },
               ]}
             />
-          </Animated.View>
-          
+          </View>
+
           {muddledFruit && (
             <View style={styles.muddledFruitContainer}>
-              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "-20deg" }] }]}>
+              <View style={[styles.fruitWrapper, { transform: [{ scaleY: 0.6 }, { rotate: "-20deg" }] }]}>
                 <CitrusWedge size={90} variant={muddledFruit} />
-              </Animated.View>
-              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "15deg" }] }]}>
+              </View>
+              <View style={[styles.fruitWrapper, { transform: [{ scaleY: 0.6 }, { rotate: "15deg" }] }]}>
                 <CitrusWedge size={90} variant={muddledFruit} />
-              </Animated.View>
+              </View>
             </View>
           )}
 
@@ -119,48 +89,26 @@ export const Action18Animation = ({
             </View>
           )}
 
+          <Animated.View
+            style={[
+              styles.spoonContainer,
+              {
+                transform: [
+                  { translateX: spoonTranslateX }
+                ],
+              },
+            ]}
+          >
+            <BarSpoon size={350} />
+          </Animated.View>
+
           <View style={styles.glassIconContainer}>
             <RegularGlass color={theme.colors.primary} size={280} />
             {hasRim && (
-              <View 
-                style={[
-                  styles.crusta, 
-                  { borderColor: rimColor } 
-                ]} 
-              />
+              <View style={[styles.crusta, { borderColor: rimColor }]} />
             )}
           </View>
         </View>
-
-        <Animated.View
-          style={[
-            styles.stream,
-            {
-              backgroundColor: liquidColor,
-              height: streamHeight,
-              opacity: streamOpacity,
-            },
-          ]}
-        />
-
-        <Animated.View
-          style={[
-            styles.shakerAssembly,
-            {
-              transform: [
-                { translateX: shakerTranslateX },
-                { translateY: shakerTranslateY },
-                { rotate: shakerRotate },
-              ],
-            },
-          ]}
-        >
-          <View style={styles.strainerPosition}>
-            <SimpleStrainer width={140} /> 
-          </View>
-
-          <BostonShaker size={240} />
-        </Animated.View>
       </View>
     </View>
   );
@@ -195,13 +143,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   crusta: {
-    position: 'absolute',
+    position: "absolute",
     top: 20,
     width: 230,
     height: 1,
     borderRadius: 15,
     borderWidth: 4,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
     zIndex: 20,
   },
   liquidMaskContainer: {
@@ -251,24 +199,9 @@ const styles = StyleSheet.create({
   staticIce: {
     position: "absolute",
   },
-  stream: {
-    width: 6,
+  spoonContainer: {
     position: "absolute",
-    top: 55,
-    left: 168,
-    zIndex: 0,
-    borderRadius: 3,
-  },
-  shakerAssembly: {
-    position: "absolute",
-    top: 0,
-    zIndex: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  strainerPosition: {
-    position: 'absolute',
-    top: 20, 
-    zIndex: 10, 
+    top: -80,
+    zIndex: 5,
   },
 });

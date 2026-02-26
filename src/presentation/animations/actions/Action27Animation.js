@@ -1,99 +1,132 @@
 import React, { useEffect, useRef } from "react";
-import { View, StyleSheet, Animated, Easing } from "react-native";
+import { View, StyleSheet, Animated, Easing, Dimensions } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
 import { IceCube } from "../assets/ingredients/IceCube";
-import { SodaBottle } from "../assets/tools/SodaBottle";
 import { CitrusWedge } from "../assets/ingredients/CitrusWedge";
 
-const lightenHexColor = (color, percent) => {
-  if (!color.startsWith("#")) return color;
-  let hex = color.replace("#", "");
-  if (hex.length === 3)
-    hex = hex
-      .split("")
-      .map((c) => c + c)
-      .join("");
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-  let r = parseInt(hex.substring(0, 2), 16);
-  let g = parseInt(hex.substring(2, 4), 16);
-  let b = parseInt(hex.substring(4, 6), 16);
-
-  r = Math.min(255, Math.round(r + (255 - r) * percent));
-  g = Math.min(255, Math.round(g + (255 - g) * percent));
-  b = Math.min(255, Math.round(b + (255 - b) * percent));
-
-  return `rgb(${r}, ${g}, ${b})`;
-};
-
-export const Action20Animation = ({
-  liquidColor = "#f59e0b",
-  initialFillLevel = 140,
-  fillLevel = 180,
+export const Action27Animation = ({
+  ingredient = "water",
+  amount = 30,
+  unit = "ml",
+  pourColor = "rgba(255, 255, 255, 0.6)",
+  initialLiquidColor = "transparent",
+  finalLiquidColor = "#f59e0b",
+  initialFillLevel = 0,
+  finalFillLevel = 40,
   hasIce = false,
   hasRim = false,
   rimColor = "white",
   muddledFruit = null,
 }) => {
-  const masterAnim = useRef(new Animated.Value(0)).current;
+  const streamAnim = useRef(new Animated.Value(0)).current;
+  const fillAnim = useRef(new Animated.Value(0)).current;
 
-  const targetLightColor = lightenHexColor(liquidColor, 0.6);
+  const safeAmount = amount === null || amount === undefined ? 30 : amount;
+
+  const calculateDuration = () => {
+    let multiplier = 1;
+    const safeUnit = unit || "ml";
+
+    switch (safeUnit.toLowerCase()) {
+      case "cl":
+        multiplier = 10;
+        break;
+      case "dl":
+        multiplier = 100;
+        break;
+      case "oz":
+        multiplier = 29.57;
+        break;
+    }
+    const ml = parseFloat(safeAmount) * multiplier;
+    if (isNaN(ml) || ml <= 0) return 3;
+    return ml / 10;
+  };
 
   useEffect(() => {
-    const loop = Animated.loop(
+    const pourDurationSeconds = calculateDuration() - 0.5;
+    const pourDurationMs = Math.max(pourDurationSeconds * 1000, 500);
+
+    const dropInDuration = 300;
+    const fallOutDuration = 300;
+    const pauseMs = 500;
+
+    const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(masterAnim, {
-          toValue: 0,
-          duration: 0,
+        Animated.parallel([
+          Animated.timing(streamAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: false,
+          }),
+          Animated.timing(fillAnim, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: false,
+          }),
+        ]),
+
+        Animated.timing(streamAnim, {
+          toValue: 1,
+          duration: dropInDuration,
           useNativeDriver: false,
+          easing: Easing.in(Easing.quad),
         }),
-        Animated.timing(masterAnim, {
-          toValue: 100,
-          duration: 10000,
-          useNativeDriver: false,
-          easing: Easing.inOut(Easing.cubic),
-        }),
-        Animated.delay(1000),
-      ]),
+
+        Animated.parallel([
+          Animated.timing(fillAnim, {
+            toValue: 1,
+            duration: pourDurationMs,
+            useNativeDriver: false,
+          }),
+          Animated.sequence([
+            Animated.delay(pourDurationMs),
+            Animated.timing(streamAnim, {
+              toValue: 2,
+              duration: fallOutDuration,
+              useNativeDriver: false,
+              easing: Easing.in(Easing.quad),
+            }),
+          ]),
+        ]),
+
+        Animated.delay(pauseMs),
+      ])
     );
 
-    loop.start();
-    return () => loop.stop();
-  }, []);
+    animation.start();
 
-  const bottleTranslateX = masterAnim.interpolate({
-    inputRange: [0, 15, 90, 100],
-    outputRange: [200, 100, 100, 200],
+    return () => animation.stop();
+  }, [safeAmount, unit]);
+
+  const totalStreamLength = SCREEN_HEIGHT / 2 + 300;
+
+  const streamHeight = streamAnim.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: [0, totalStreamLength, 0],
   });
 
-  const bottleTranslateY = masterAnim.interpolate({
-    inputRange: [0, 15, 90, 100],
-    outputRange: [-100, -160, -160, -100],
+  const topStart = -SCREEN_HEIGHT / 2;
+  const topEnd = 200;
+
+  const streamTop = streamAnim.interpolate({
+    inputRange: [0, 1, 2],
+    outputRange: [topStart, topStart, topEnd],
   });
 
-  const bottleRotate = masterAnim.interpolate({
-    inputRange: [0, 15, 40, 85, 95, 100],
-    outputRange: ["0deg", "0deg", "-105deg", "-105deg", "0deg", "0deg"],
+  const currentFillHeight = fillAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [initialFillLevel, finalFillLevel],
   });
 
-  const streamHeight = masterAnim.interpolate({
-    inputRange: [40, 45, 80, 85],
-    outputRange: [0, 250, 250, 0],
-  });
-
-  const streamOpacity = masterAnim.interpolate({
-    inputRange: [40, 42, 83, 85],
-    outputRange: [0, 1, 1, 0],
-  });
-
-  const currentFillHeight = masterAnim.interpolate({
-    inputRange: [0, 42, 85, 100],
-    outputRange: [initialFillLevel, initialFillLevel, fillLevel, fillLevel],
-  });
-
-  const animatedLiquidColor = masterAnim.interpolate({
-    inputRange: [0, 42, 85, 100],
-    outputRange: [liquidColor, liquidColor, targetLightColor, targetLightColor],
+  const animStartColor = initialLiquidColor === "transparent" ? "rgba(255, 255, 255, 0)" : initialLiquidColor;
+  
+  const animatedLiquidColor = fillAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [animStartColor, finalLiquidColor],
   });
 
   return (
@@ -113,10 +146,20 @@ export const Action20Animation = ({
 
           {muddledFruit && (
             <View style={styles.muddledFruitContainer}>
-              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "-20deg" }] }]}>
+              <Animated.View
+                style={[
+                  styles.fruitWrapper,
+                  { transform: [ { rotate: "-20deg" }] },
+                ]}
+              >
                 <CitrusWedge size={90} variant={muddledFruit} />
               </Animated.View>
-              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "15deg" }] }]}>
+              <Animated.View
+                style={[
+                  styles.fruitWrapper,
+                  { transform: [{ rotate: "15deg" }] },
+                ]}
+              >
                 <CitrusWedge size={90} variant={muddledFruit} />
               </Animated.View>
             </View>
@@ -179,27 +222,12 @@ export const Action20Animation = ({
           style={[
             styles.stream,
             {
-              backgroundColor: "rgba(200, 240, 255, 0.7)",
+              backgroundColor: pourColor,
               height: streamHeight,
-              opacity: streamOpacity,
+              top: streamTop,
             },
           ]}
         />
-
-        <Animated.View
-          style={[
-            styles.bottleAssembly,
-            {
-              transform: [
-                { translateX: bottleTranslateX },
-                { translateY: bottleTranslateY },
-                { rotate: bottleRotate },
-              ],
-            },
-          ]}
-        >
-          <SodaBottle />
-        </Animated.View>
       </View>
     </View>
   );
@@ -285,24 +313,16 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     alignItems: "center",
-    zIndex: 3,
+    zIndex: 1,
   },
   staticIce: {
     position: "absolute",
   },
   stream: {
-    width: 10,
+    width: 14,
+    borderRadius: 7,
     position: "absolute",
-    top: -20,
-    left: 140,
+    left: 143,
     zIndex: 0,
-    borderRadius: 5,
-  },
-  bottleAssembly: {
-    position: "absolute",
-    top: 0,
-    zIndex: 20,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });

@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated, Easing } from 'react-native';
 import { theme } from '../../../core/theme';
 import { RegularGlass } from '../assets/glasses/RegularGlass';
-import { LimeSlice } from '../assets/ingredients/LimeSlice';
+import { CitrusWedge } from '../assets/ingredients/CitrusWedge';
 
 export const Action12Animation = ({ ingredient = 'lime' }) => {
   const progress = useRef(new Animated.Value(0)).current;
@@ -62,7 +62,7 @@ export const Action12Animation = ({ ingredient = 'lime' }) => {
                 }
             ]}
         >
-            <LimeSlice size={100} variant={ingredient} />
+            <CitrusWedge size={100} variant={ingredient} />
         </Animated.View>
       </View>
     </View>

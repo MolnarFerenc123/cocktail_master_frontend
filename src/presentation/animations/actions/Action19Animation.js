@@ -3,12 +3,16 @@ import { View, StyleSheet, Animated, Easing } from "react-native";
 import { theme } from "../../../core/theme";
 import { RegularGlass } from "../assets/glasses/RegularGlass";
 import { IceCube } from "../assets/ingredients/IceCube";
-import { LimeSlice } from "../assets/ingredients/LimeSlice"; 
+import { CitrusWedge } from "../assets/ingredients/CitrusWedge";
 
 export const Action19Animation = ({
   liquidColor = "#f59e0b",
+  fillLevel = 140,
   hasIce = false,
-  garnishVariant = "lime"
+  hasRim = false,
+  rimColor = "white",
+  garnishVariant = "lime",
+  muddledFruit = null,
 }) => {
   const limeAnim = useRef(new Animated.Value(0)).current;
 
@@ -25,10 +29,10 @@ export const Action19Animation = ({
           toValue: 1,
           duration: 1000,
           useNativeDriver: true,
-          easing: Easing.bounce, 
+          easing: Easing.bounce,
         }),
         Animated.delay(2000),
-      ])
+      ]),
     );
 
     loop.start();
@@ -37,26 +41,24 @@ export const Action19Animation = ({
 
   const limeTranslateX = limeAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 0], 
+    outputRange: [0, 0],
   });
 
   const limeTranslateY = limeAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [-300, 0], 
+    outputRange: [-300, 0],
   });
 
   const limeRotate = limeAnim.interpolate({
-    inputRange: [0, 0.7, 1], 
-    outputRange: ["0deg", "0deg", "-30deg"], 
+    inputRange: [0, 0.7, 1],
+    outputRange: ["0deg", "0deg", "-30deg"],
   });
 
   return (
     <View style={styles.container}>
       <View style={styles.scene}>
-        
         <View style={styles.glassWrapper}>
-          
-          <View style={[styles.liquidMaskContainer, { height: 140 }]}>
+          <View style={[styles.liquidMaskContainer, { height: fillLevel }]}>
             <View
               style={[
                 styles.liquidTrapézShape,
@@ -65,21 +67,57 @@ export const Action19Animation = ({
             />
           </View>
 
+          {muddledFruit && (
+            <View style={styles.muddledFruitContainer}>
+              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "-20deg" }] }]}>
+                <CitrusWedge size={90} variant={muddledFruit} />
+              </Animated.View>
+              <Animated.View style={[styles.fruitWrapper, { transform: [{ rotate: "15deg" }] }]}>
+                <CitrusWedge size={90} variant={muddledFruit} />
+              </Animated.View>
+            </View>
+          )}
+
           {hasIce && (
             <View style={styles.iceLayer}>
-              <View style={[styles.staticIce, { top: 20, left: -20, transform: [{ rotate: "15deg" }] }]}>
+              <View
+                style={[
+                  styles.staticIce,
+                  { top: 20, left: -20, transform: [{ rotate: "15deg" }] },
+                ]}
+              >
                 <IceCube size={70} />
               </View>
-              <View style={[styles.staticIce, { top: 10, left: 41, transform: [{ rotate: "-15deg" }] }]}>
+              <View
+                style={[
+                  styles.staticIce,
+                  { top: 10, left: 41, transform: [{ rotate: "-15deg" }] },
+                ]}
+              >
                 <IceCube size={78} />
               </View>
-              <View style={[styles.staticIce, { top: -30, left: 11, transform: [{ rotate: "60deg" }] }]}>
+              <View
+                style={[
+                  styles.staticIce,
+                  { top: -30, left: 11, transform: [{ rotate: "60deg" }] },
+                ]}
+              >
                 <IceCube size={58} />
               </View>
-              <View style={[styles.staticIce, { top: -82, left: -38, transform: [{ rotate: "-130deg" }] }]}>
+              <View
+                style={[
+                  styles.staticIce,
+                  { top: -82, left: -38, transform: [{ rotate: "-130deg" }] },
+                ]}
+              >
                 <IceCube size={80} />
               </View>
-              <View style={[styles.staticIce, { top: -45, left: 68, transform: [{ rotate: "110deg" }] }]}>
+              <View
+                style={[
+                  styles.staticIce,
+                  { top: -45, left: 68, transform: [{ rotate: "110deg" }] },
+                ]}
+              >
                 <IceCube size={60} />
               </View>
             </View>
@@ -87,6 +125,9 @@ export const Action19Animation = ({
 
           <View style={styles.glassIconContainer}>
             <RegularGlass color={theme.colors.primary} size={280} />
+            {hasRim && (
+              <View style={[styles.crusta, { borderColor: rimColor }]} />
+            )}
           </View>
 
           <Animated.View
@@ -101,9 +142,8 @@ export const Action19Animation = ({
               },
             ]}
           >
-            <LimeSlice size={100} variant={garnishVariant} />
+            <CitrusWedge size={100} variant={garnishVariant} />
           </Animated.View>
-
         </View>
       </View>
     </View>
@@ -136,6 +176,17 @@ const styles = StyleSheet.create({
   glassIconContainer: {
     zIndex: 10,
     top: -40,
+    alignItems: "center",
+  },
+  crusta: {
+    position: "absolute",
+    top: 20,
+    width: 230,
+    height: 1,
+    borderRadius: 15,
+    borderWidth: 4,
+    backgroundColor: "transparent",
+    zIndex: 20,
   },
   liquidMaskContainer: {
     position: "absolute",
@@ -159,6 +210,20 @@ const styles = StyleSheet.create({
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
   },
+  muddledFruitContainer: {
+    position: "absolute",
+    bottom: 45,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "flex-end",
+    width: 120,
+    height: 60,
+    zIndex: 2,
+  },
+  fruitWrapper: {
+    marginHorizontal: -20,
+    marginBottom: -20,
+  },
   iceLayer: {
     position: "absolute",
     bottom: 40,
@@ -170,11 +235,10 @@ const styles = StyleSheet.create({
   staticIce: {
     position: "absolute",
   },
-  
   garnishPosition: {
     position: "absolute",
     top: -55,
     left: -10,
-    zIndex: 15, 
+    zIndex: 15,
   },
 });

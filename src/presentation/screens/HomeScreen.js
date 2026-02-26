@@ -3,7 +3,7 @@ import {
   View,
   Text,
   StyleSheet,
-  FlatList,
+  SectionList,
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
@@ -28,6 +28,14 @@ const CATEGORIES = [
   "Tequila",
   "Whiskey",
 ];
+
+const formatDataIntoRows = (data, numColumns) => {
+  const rows = [];
+  for (let i = 0; i < data.length; i += numColumns) {
+    rows.push(data.slice(i, i + numColumns));
+  }
+  return rows;
+};
 
 const HomeHeader = ({ activeFilter, setActiveFilter }) => {
   return (
@@ -63,8 +71,6 @@ const HomeHeader = ({ activeFilter, setActiveFilter }) => {
           ))}
         </ScrollView>
       </View>
-
-      <Text style={styles.sectionTitle}>Cocktail Menu</Text>
     </View>
   );
 };
@@ -72,10 +78,11 @@ const HomeHeader = ({ activeFilter, setActiveFilter }) => {
 export default function HomeScreen() {
   const navigation = useNavigation();
 
-  const { cocktails, loading, activeFilter, setActiveFilter } = HomeViewModel();
+  const { cocktails, externalCocktails, loading, activeFilter, setActiveFilter, reload } = HomeViewModel();
 
-  const renderItem = ({ item }) => (
+  const renderCard = (item) => (
     <TouchableOpacity
+      key={item.id}
       style={styles.gridCard}
       onPress={() => navigation.navigate("CocktailDetail", { id: item.id })}
     >
@@ -99,6 +106,23 @@ export default function HomeScreen() {
     </TouchableOpacity>
   );
 
+  const renderRow = ({ item }) => (
+    <View style={styles.rowWrapper}>
+      {item.map((cocktail) => renderCard(cocktail))}
+      {Array.from({ length: 3 - item.length }).map((_, idx) => (
+        <View key={`empty-${idx}`} style={{ width: CARD_WIDTH }} />
+      ))}
+    </View>
+  );
+
+  const renderSectionHeader = ({ section: { title } }) => (
+    <View style={styles.sectionHeaderContainer}>
+      <View style={styles.divider} />
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <View style={styles.divider} />
+    </View>
+  );
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -107,15 +131,24 @@ export default function HomeScreen() {
     );
   }
 
+  const sections = [
+    { title: "Cocktail Menu", data: formatDataIntoRows(cocktails, 3) },
+  ];
+
+  if (externalCocktails.length > 0) {
+    sections.push({
+      title: "TheCocktailDB",
+      data: formatDataIntoRows(externalCocktails, 3),
+    });
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <FlatList
-        data={cocktails}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        numColumns={3}
-        key={3}
-        columnWrapperStyle={styles.columnWrapper}
+      <SectionList
+        sections={sections}
+        keyExtractor={(item, index) => `row-${index}`}
+        renderItem={renderRow}
+        renderSectionHeader={renderSectionHeader}
         ListHeaderComponent={
           <HomeHeader
             activeFilter={activeFilter}
@@ -124,6 +157,8 @@ export default function HomeScreen() {
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
+        onRefresh={reload}
+        refreshing={loading}
       />
     </SafeAreaView>
   );
@@ -143,13 +178,12 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 100,
   },
-  columnWrapper: {
+  rowWrapper: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingHorizontal: theme.spacing.m,
-    justifyContent: "flex-start",
-    gap: 10,
     marginBottom: 10,
   },
-
   gridCard: {
     width: CARD_WIDTH,
     backgroundColor: theme.colors.surface,
@@ -193,7 +227,6 @@ const styles = StyleSheet.create({
     fontSize: 9,
     fontWeight: "800",
   },
-
   header: {
     marginTop: theme.spacing.m,
     marginBottom: theme.spacing.l,
@@ -205,7 +238,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   filterContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   filterScrollContent: {
     paddingHorizontal: theme.spacing.m,
@@ -229,11 +262,22 @@ const styles = StyleSheet.create({
   activeCategoryText: {
     color: "white",
   },
+  sectionHeaderContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: theme.spacing.m,
+    marginVertical: 15,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: theme.colors.textSecondary,
+    opacity: 0.2,
+  },
   sectionTitle: {
-    color: theme.colors.text,
+    marginHorizontal: 15,
     fontSize: 20,
     fontWeight: "bold",
-    marginBottom: theme.spacing.m,
-    paddingHorizontal: theme.spacing.m,
+    color: theme.colors.text,
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   StyleSheet,
@@ -9,8 +9,15 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { theme } from "../../core/theme";
-import { Action12Animation } from "../animations/actions/Action12Animation";
+
+import {
+  mixLiquidColors,
+  ingredientColors,
+  lightenHexColor,
+} from "../utils/colorUtils";
+
 import { Action11Animation } from "../animations/actions/Action11Animation";
+import { Action12Animation } from "../animations/actions/Action12Animation";
 import { Action13Animation } from "../animations/actions/Action13Animation";
 import { Action14Animation } from "../animations/actions/Action14Animation";
 import { Action15Animation } from "../animations/actions/Action15Animation";
@@ -18,14 +25,102 @@ import { Action16Animation } from "../animations/actions/Action16Animation";
 import { Action17Animation } from "../animations/actions/Action17Animation";
 import { Action18Animation } from "../animations/actions/Action18Animation";
 import { Action19Animation } from "../animations/actions/Action19Animation";
+import { Action20Animation } from "../animations/actions/Action20Animation";
+import { Action24Animation } from "../animations/actions/Action24Animation";
+import { Action25Animation } from "../animations/actions/Action25Animation";
+import { Action27Animation } from "../animations/actions/Action27Animation";
+import { Action28Animation } from "../animations/actions/Action28Animation";
 
 export default function AnimationScreen({ route, navigation }) {
   const { cocktail } = route.params;
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
 
+  const [glassState, setGlassState] = useState({
+    glassType: null,
+    hasIce: false,
+    hasRim: false,
+    rimColor: "white",
+    fillLevel: 0,
+    previousFillLevel: 0,
+    liquidColor: "transparent",
+    previousLiquidColor: "transparent",
+    addedLiquids: [],
+    fruitsInside: [],
+    muddledFruit: null,
+    garnishOnRim: null,
+  });
+
   const steps = cocktail.steps || [];
   const currentStep = steps[currentStepIndex];
+
+  useEffect(() => {
+    if (!steps || steps.length === 0) return;
+
+    let tempState = {
+      glassType: null,
+      hasIce: false,
+      hasRim: false,
+      rimColor: "white",
+      fillLevel: 0,
+      previousFillLevel: 0,
+      liquidColor: "transparent",
+      previousLiquidColor: "transparent",
+      addedLiquids: [],
+      fruitsInside: [],
+      muddledFruit: null,
+      garnishOnRim: null,
+    };
+
+    for (let i = 0; i <= currentStepIndex; i++) {
+      const step = steps[i];
+      if (!step) continue;
+
+      tempState.previousLiquidColor = tempState.liquidColor;
+      tempState.previousFillLevel = tempState.fillLevel;
+
+      switch (step.actionId) {
+        case 11:
+          tempState.glassType = step.details?.ingredient || "RegularGlass";
+          break;
+        case 13:
+          tempState.hasRim = true;
+          tempState.rimColor =
+            step.details?.ingredient === "lime" ? "#84cc16" : "white";
+          break;
+        case 15:
+          tempState.hasIce = true;
+          break;
+        case 16:
+          if (step.details?.ingredient) {
+            tempState.addedLiquids.push(step.details.ingredient);
+            tempState.liquidColor = mixLiquidColors(tempState.addedLiquids);
+          }
+          break;
+        case 18:
+          tempState.fillLevel = 140;
+          break;
+        case 19:
+          tempState.garnishOnRim = step.details?.ingredient || "lime";
+          break;
+        case 20:
+          tempState.fillLevel = 180;
+          tempState.liquidColor = lightenHexColor(tempState.liquidColor, 0.6);
+          break;
+        case 24:
+          tempState.muddledFruit = step.details?.ingredient || "orange";
+          break;
+        case 27:
+          if (step.details?.ingredient) {
+            tempState.addedLiquids.push(step.details.ingredient);
+            tempState.liquidColor = mixLiquidColors(tempState.addedLiquids);
+            tempState.fillLevel = Math.min(180, tempState.previousFillLevel + 40);
+          }
+          break;
+      }
+    }
+    setGlassState(tempState);
+  }, [currentStepIndex, steps]);
 
   const handleNextStep = () => {
     if (currentStepIndex < steps.length - 1) {
@@ -64,14 +159,13 @@ export default function AnimationScreen({ route, navigation }) {
     }
 
     if (!currentStep) return <ActivityIndicator />;
-    console.log;
 
     switch (currentStep.actionId) {
       case 11:
         return (
           <Action11Animation
             key={currentStepIndex}
-            glassType={currentStep.details?.ingredient || "Glass"}
+            glassType={glassState.glassType}
           />
         );
       case 12:
@@ -91,16 +185,28 @@ export default function AnimationScreen({ route, navigation }) {
       case 14:
         return <Action14Animation key={currentStepIndex} />;
       case 15:
-        return <Action15Animation key={currentStepIndex} />;
-      case 16:
+        return (
+          <Action15Animation
+            key={currentStepIndex}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
+      case 16: {
+        const ingredientName = currentStep.details?.ingredient?.toLowerCase();
+        const pourColor =
+          ingredientColors[ingredientName] || "rgba(255, 255, 255, 0.6)";
         return (
           <Action16Animation
             key={currentStepIndex}
             ingredient={currentStep.details?.ingredient}
             amount={currentStep.details?.amount}
             unit={currentStep.details?.unit}
+            pourColor={pourColor}
           />
         );
+      }
       case 17:
         return (
           <Action17Animation
@@ -109,9 +215,98 @@ export default function AnimationScreen({ route, navigation }) {
           />
         );
       case 18:
-        return <Action18Animation liquidColor="#d97706" hasIce={true} />;
+        return (
+          <Action18Animation
+            key={currentStepIndex}
+            liquidColor={glassState.liquidColor}
+            initialFillLevel={glassState.previousFillLevel}
+            fillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
       case 19:
-        return <Action19Animation liquidColor="#d97706" hasIce={true} />;
+        return (
+          <Action19Animation
+            key={currentStepIndex}
+            liquidColor={glassState.liquidColor}
+            fillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            garnishVariant={glassState.garnishOnRim || "lime"}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
+      case 20:
+        return (
+          <Action20Animation
+            key={currentStepIndex}
+            liquidColor={glassState.previousLiquidColor}
+            initialFillLevel={glassState.previousFillLevel}
+            fillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
+      case 24:
+        return (
+          <Action24Animation
+            key={currentStepIndex}
+            ingredient={currentStep.details?.ingredient || "orange"}
+          />
+        );
+      case 25:
+        return (
+          <Action25Animation
+            key={currentStepIndex}
+            liquidColor={glassState.liquidColor}
+            fillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
+      case 27: {
+        const ingredientName = currentStep.details?.ingredient?.toLowerCase();
+        const pourColor =
+          ingredientColors[ingredientName] || "rgba(255, 255, 255, 0.6)";
+        return (
+          <Action27Animation
+            key={currentStepIndex}
+            ingredient={currentStep.details?.ingredient}
+            amount={currentStep.details?.amount}
+            unit={currentStep.details?.unit}
+            pourColor={pourColor}
+            initialLiquidColor={glassState.previousLiquidColor}
+            finalLiquidColor={glassState.liquidColor}
+            initialFillLevel={glassState.previousFillLevel}
+            finalFillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
+      }
+      case 28:
+        return (
+          <Action28Animation
+            key={currentStepIndex}
+            amount={currentStep.details?.amount}
+            liquidColor={glassState.liquidColor}
+            fillLevel={glassState.fillLevel}
+            hasIce={glassState.hasIce}
+            hasRim={glassState.hasRim}
+            rimColor={glassState.rimColor}
+            muddledFruit={glassState.muddledFruit}
+          />
+        );
       default:
         return <PlaceholderAnimation step={currentStep} />;
     }
