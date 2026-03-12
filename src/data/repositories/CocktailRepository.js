@@ -16,12 +16,12 @@ export const CocktailRepository = {
             name: dto.name,
             isVirgin: dto.isVirgin,
             imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-              dto.name
+              dto.name,
             )}&background=random&size=256`,
             ingredients: [],
             steps: [],
             hasAnimation: true,
-          })
+          }),
       );
     } catch (error) {
       return [];
@@ -42,7 +42,7 @@ export const CocktailRepository = {
             ingredients: [],
             steps: [],
             hasAnimation: false,
-          })
+          }),
       );
     } catch (error) {
       return [];
@@ -53,7 +53,8 @@ export const CocktailRepository = {
     try {
       if (typeof id === "string" && id.startsWith("ext_")) {
         const realId = id.replace("ext_", "");
-        const data = await CocktailDbRemoteDataSource.fetchCocktailDetails(realId);
+        const data =
+          await CocktailDbRemoteDataSource.fetchCocktailDetails(realId);
 
         if (!data) return null;
 
@@ -68,7 +69,7 @@ export const CocktailRepository = {
                 name: ingName.trim(),
                 amount: ingMeasure ? ingMeasure.trim() : "",
                 unit: "",
-              })
+              }),
             );
           }
         }
@@ -82,10 +83,11 @@ export const CocktailRepository = {
 
           rawSentences.forEach((sentence) => {
             let cleanSentence = sentence.trim();
-            
+
             if (cleanSentence.length > 0) {
-              cleanSentence = cleanSentence.charAt(0).toUpperCase() + cleanSentence.slice(1);
-              
+              cleanSentence =
+                cleanSentence.charAt(0).toUpperCase() + cleanSentence.slice(1);
+
               if (!cleanSentence.endsWith(".")) {
                 cleanSentence += ".";
               }
@@ -97,7 +99,7 @@ export const CocktailRepository = {
                   number: steps.length + 1,
                   description: cleanSentence,
                   details: {},
-                })
+                }),
               );
             }
           });
@@ -129,7 +131,7 @@ export const CocktailRepository = {
                 name: d.ingredient,
                 amount: d.amount,
                 unit: d.unit,
-              })
+              }),
             );
           }
         }
@@ -143,7 +145,7 @@ export const CocktailRepository = {
             number: s.stepNumber,
             description: s.description,
             details: s.details,
-          })
+          }),
       );
 
       return new Cocktail({
@@ -151,7 +153,7 @@ export const CocktailRepository = {
         name: dto.name,
         isVirgin: dto.isVirgin,
         imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-          dto.name
+          dto.name,
         )}&background=random&size=512`,
         ingredients: ingredients,
         steps: steps,
@@ -159,6 +161,37 @@ export const CocktailRepository = {
       });
     } catch (error) {
       return null;
+    }
+  },
+
+  searchCocktails: async (filters) => {
+    try {
+      const dtos = await CocktailRemoteDataSource.searchCocktails(filters);
+
+      return dtos.map(
+        (dto) =>
+          new Cocktail({
+            id: dto.id || dto.cocktail_id,
+            name: dto.name,
+            isVirgin: dto.isVirgin || dto.virgin,
+            imageUrl: `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              dto.name,
+            )}&background=random&size=256`,
+            ingredients: [],
+            steps: [],
+            hasAnimation: true,
+          }),
+      );
+    } catch (error) {
+      return [];
+    }
+  },
+
+  getAllIngredients: async () => {
+    try {
+      return await CocktailRemoteDataSource.fetchIngredients();
+    } catch (error) {
+      return [];
     }
   },
 };

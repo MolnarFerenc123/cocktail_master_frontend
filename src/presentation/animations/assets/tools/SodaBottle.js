@@ -17,7 +17,7 @@ const styles = StyleSheet.create({
   bottleNeck: {
     width: 16,
     height: 60,
-    backgroundColor: "#1e3a8a", // Sötétkék üveg nyak
+    backgroundColor: "#1e3a8a",
     borderTopLeftRadius: 4,
     borderTopRightRadius: 4,
     borderBottomWidth: 0,
@@ -25,17 +25,17 @@ const styles = StyleSheet.create({
   bottleBody: {
     width: 60,
     height: 160,
-    backgroundColor: "#1d4ed8", // Világosabb kék üveg test
+    backgroundColor: "#1d4ed8",
     borderRadius: 12,
     marginTop: -5,
     alignItems: "center",
     justifyContent: "center",
-    overflow: "hidden", // FIX: Ezzel garantáltan nem lóg ki a címke
+    overflow: "hidden",
     borderRightWidth: 4,
-    borderRightColor: "rgba(0,0,0,0.1)", // Kis belső árnyék
+    borderRightColor: "rgba(0,0,0,0.1)",
   },
   bottleLabel: {
-    width: 62, // FIX: Kitölti a belső teret
+    width: 62,
     height: 50,
     backgroundColor: "#f8fafc",
     borderTopWidth: 2,
