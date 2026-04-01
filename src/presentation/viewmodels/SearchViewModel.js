@@ -8,9 +8,7 @@ const EXCLUDED_INGREDIENTS = [
   "margarita",
   "martini",
   "mixing",
-  "old fashioned",
-  "paper plane",
-  "fruit stick",
+  "old fashioned"
 ];
 
 export const useSearchViewModel = () => {
