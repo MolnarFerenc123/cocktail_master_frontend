@@ -15,6 +15,14 @@ It also includes authentication flows for login and registration, with token sto
 - Open animated recipe walkthroughs for supported cocktails
 - User authentication with login and registration
 
+## Backend Repository
+
+The API backend used by this frontend is hosted in the following repository:
+
+- https://github.com/MolnarFerenc123/cocktail_master_backend
+
+Make sure the backend is running before starting the frontend, or update the API base URL in [src/core/config.js](src/core/config.js) if your backend uses a different address.
+
 ## Technologies Used
 
 - **React Native** – mobile app framework
