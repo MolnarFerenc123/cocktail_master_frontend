@@ -73,6 +73,7 @@ export const CocktailRepository = {
             );
           }
         }
+        //További transzformációk...
 
         const steps = [];
         if (data.strInstructions) {
